@@ -3,7 +3,7 @@
 widget = "experience"  # See https://sourcethemes.com/academic/docs/page-builder/
 headless = true  # This file represents a page section.
 active = true  # Activate this widget? true/false
-weight = 40  # Order that this section will appear.
+weight = 30  # Order that this section will appear.
 
 title = "Experience"
 subtitle = ""
@@ -18,27 +18,47 @@ date_format = "Jan 2006"
 #   Leave `date_end` empty if it's your current employer.
 #   Begin/end multi-line descriptions with 3 quotes `"""`.
 [[experience]]
-  title = "CEO"
-  company = "GenCoin"
+  title = "Research Assistant"
+  company = "Drexel University"
   company_url = ""
-  location = "California"
-  date_start = "2017-01-01"
+  location = "Philadelphia, PA"
+  date_start = "2017-10-01"
   date_end = ""
   description = """
-  Responsibilities include:
+
+  Research work includes:
   
-  * Analysing
-  * Modelling
-  * Deploying
+  * Examine simulated LSST cadences for AGN classification and variability modeling
+  * Build a training data for AGN selection in LSST using data from the SDSS Stripe 82 and XMM-LSS regions
+  * Develop AGN selection and photo-z estimation algorithms using machine learning
   """
 
 [[experience]]
-  title = "Professor"
-  company = "University X"
+  title = "Teaching Assistant"
+  company = "Drexel University"
   company_url = ""
-  location = "California"
-  date_start = "2016-01-01"
-  date_end = "2016-12-31"
-  description = """Taught electronic engineering and researched semiconductor physics."""
+  location = "Philadelphia, PA"
+  date_start = "2017-10-01"
+  date_end = ""
+  description = """
+  Course Taught:
+  
+  * PHYS 152 -- Introductory Physics I
+  * PHYS 153 -- Introductory Physics II
+  * PHYS 102 -- Fundamental of Physics II
+  * PHYS 232 -- Observational Astrophysics
+  """
+
+[[experience]]
+  title = "Academical Professional"
+  company = "National Center for Supercomputing Applications"
+  company_url = ""
+  location = "Urbana, IL"
+  date_start = "2016-03-01"
+  date_end = "2017-01-31"
+  description = """Worked on the development of an image cutout server for the internal data release within Dark Energy Survey, improved the 
+  overall server performance by a factor of fifty through the introduction of non-blowing I/O, distributed task allocation, parallel computing and a MongoDB database
+
+  """
 
 +++
