@@ -23,14 +23,13 @@ hugo server
 If require installation, see [here](https://wowchemy.com/docs/getting-started/install-hugo-extended/)
 
 ### How to deploy as github pages
-1. Run `rm -r public/` if it exists
-2. Run
+1. Run
    ```bash
    git add .
    git commit -m "message"
    git push
    ```
-3. Run
+2. Run
    ```bash
    hugo
    cd public
