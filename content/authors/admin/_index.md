@@ -21,8 +21,8 @@ organizations:
 bio: 
 
 interests:
-- AGN classification & Photo-z estimation
 - AGN variability & time domain astronomy
+- AGN classification & Photo-z estimation
 - Machine Learning applications in astronomy
 
 education:
@@ -70,4 +70,5 @@ user_groups:
 - Visitors
 ---
 
-I am a Physics Ph.D. student at Drexel University, working under the supervision of Prof. [Gordon T. Richards](http://www.physics.drexel.edu/~gtr/GTR/GTR_Home.html). I study Active Galactic Nuclei (AGNs), which are believed to be powered by super-massive black holes living at the center of massive galaxies. At the moment, my primary research focus is the development of a new AGN classification algorithm for future large astronomical surveys like the Rubin Observatory Legacy Survey of Space and Time (LSST). In the mean time, I employ stochastic modeling, in particular, the continuous-time autoregressive moving-average (CARMA) process, to investigate the physical properties of AGN accretion disks from the light curves. After all, I am always interested in applying modern machine learning techniques to tackle challenging problems introduced by ever-growing data set in astronomy.
+I am a Physics Ph.D. student at Drexel University, working under the supervision of Prof. [Gordon T. Richards](http://www.physics.drexel.edu/~gtr/GTR/GTR_Home.html). 
+I study Active Galactic Nuclei (AGN), which are believed to be powered by super-massive black holes living at the center of massive galaxies. My dissertation research focuses on elucidating the nature of AGN UV/optical variability through directly modeling AGN light curves as stochastic diffusion processes, in particular, the continuous-time autoregressive moving-average (CARMA) processes. I am also interested in the classification and photometric redshift estimation of AGN observed by large astronomical surveys like the upcoming Rubin Observatory Legacy Survey of Space and Time (LSST), both of which require a robust description/understanding of AGN UV/optical variability. Lastly, I am always enthusiastic about the every-changing frontiers of modern machine learning and its application to challenging problems (e.g., source classification) introduced by ever-growing data set in astronomy.

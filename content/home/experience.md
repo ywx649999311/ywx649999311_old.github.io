@@ -28,9 +28,10 @@ date_format = "Jan 2006"
 
   Research work includes:
   
-  * Examine simulated LSST cadences for AGN classification and variability modeling
-  * Build a training data for AGN selection in LSST using data from the SDSS Stripe 82 and XMM-LSS regions
-  * Develop AGN selection and photo-z estimation algorithms using machine learning
+  * Model SDSS Stripe 82 quasar light curves as CARMA(2,1)/DHO processes
+  * Run the LSSTC AGN Data Challenge 2021
+  * Construct a training data set for AGN classification in LSST using archival data from the SDSS Stripe 82 and XMM-LSS regions
+  * Examine simulated LSST cadences for AGN classification and variability study
   """
 
 [[experience]]
@@ -43,10 +44,10 @@ date_format = "Jan 2006"
   description = """
   Course Taught:
   
-  * PHYS 152 -- Introductory Physics I
-  * PHYS 153 -- Introductory Physics II
-  * PHYS 102 -- Fundamental of Physics II
+  * PHYS 231 -- Introductory Astrophysics
   * PHYS 232 -- Observational Astrophysics
+  * PHYS 532 -- Cosmology
+  * PHYS 540 -- Big Data Physics
   """
 
 [[experience]]
