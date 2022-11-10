@@ -29,7 +29,7 @@ education:
   courses:
   - course: Ph.D. in Physics
     institution: Drexel University
-    year: 2022 (Expected)
+    year: 2023 (Expected)
   - course: M.S. in Physics
     institution: Drexel University
     year: 2019
