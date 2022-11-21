@@ -1,0 +1,605 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>vizic.control_widgets &mdash; Vizic 0.4 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="Vizic 0.4 documentation" href="../../index.html"/>
+        <link rel="up" title="Module code" href="../index.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> Vizic
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.4
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../vizic.html">Vizic API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../extensions.html">Extensions</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Vizic</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>vizic.control_widgets</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for vizic.control_widgets</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">.astroleaflet</span> <span class="k">import</span> <span class="o">*</span>
+
+
+<span class="c1"># class NotebookUrl(Widget):</span>
+<span class="c1">#     &quot;&quot;&quot;Widget to get Jupyter server url.</span>
+<span class="c1">#</span>
+<span class="c1">#     The actural url of the Jupyter server is assigned to class variable ``nb_url`` after the widget being rendered.</span>
+<span class="c1">#     &quot;&quot;&quot;</span>
+<span class="c1">#     _view_name = Unicode(&#39;NotebookUrlView&#39;).tag(sync=True)</span>
+<span class="c1">#     _view_module = Unicode(&#39;jupyter-vizic&#39;).tag(sync=True)</span>
+<span class="c1">#     nb_url = Unicode().tag(sync=True)</span>
+
+
+<div class="viewcode-block" id="LayerColorPicker"><a class="viewcode-back" href="../../vizic.html#vizic.control_widgets.LayerColorPicker">[docs]</a><span class="k">class</span> <span class="nc">LayerColorPicker</span><span class="p">(</span><span class="n">ColorPicker</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Layer colorpicker widget.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        layer: The layer of which the color is being controlled by the picker.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">_view_name</span> <span class="o">=</span> <span class="n">Unicode</span><span class="p">(</span><span class="s1">&#39;LayerColorPickerView&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">_view_module</span> <span class="o">=</span> <span class="n">Unicode</span><span class="p">(</span><span class="s1">&#39;jupyter-vizic&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">layer</span> <span class="o">=</span> <span class="n">Instance</span><span class="p">(</span><span class="n">Layer</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">LayerColorPicker</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">layer</span><span class="o">.</span><span class="n">color</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">link</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">layer</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">concise</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">layout</span><span class="o">.</span><span class="n">width</span> <span class="o">=</span> <span class="s1">&#39;30px&#39;</span>
+
+<div class="viewcode-block" id="LayerColorPicker.unlink"><a class="viewcode-back" href="../../vizic.html#vizic.control_widgets.LayerColorPicker.unlink">[docs]</a>    <span class="k">def</span> <span class="nf">unlink</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Unlink colorpicker and layer.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dlink</span><span class="o">.</span><span class="n">unlink</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="LayerColorPicker.link"><a class="viewcode-back" href="../../vizic.html#vizic.control_widgets.LayerColorPicker.link">[docs]</a>    <span class="k">def</span> <span class="nf">link</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">layer</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Link the colorpicker to the layer.</span>
+
+<span class="sd">        Used directional link from value attribute to the color attribute of</span>
+<span class="sd">        the target layer object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">layer</span> <span class="o">=</span> <span class="n">layer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dlink</span> <span class="o">=</span> <span class="n">dlink</span><span class="p">((</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">),</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">layer</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">))</span></div></div>
+
+
+<div class="viewcode-block" id="PopupDis"><a class="viewcode-back" href="../../vizic.html#vizic.control_widgets.PopupDis">[docs]</a><span class="k">class</span> <span class="nc">PopupDis</span><span class="p">(</span><span class="n">DOMWidget</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Popup display Widget</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        layer: The base tilelayer that the widget is monitoring.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">_view_name</span> <span class="o">=</span> <span class="n">Unicode</span><span class="p">(</span><span class="s1">&#39;PopupDisView&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">_view_module</span> <span class="o">=</span> <span class="n">Unicode</span><span class="p">(</span><span class="s1">&#39;jupyter-vizic&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">_object_info</span> <span class="o">=</span> <span class="n">Dict</span><span class="p">()</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">layer</span> <span class="o">=</span> <span class="n">Instance</span><span class="p">(</span><span class="n">GridLayer</span><span class="p">)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">Instance</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span> <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<div class="viewcode-block" id="PopupDis.__init__"><a class="viewcode-back" href="../../vizic.html#vizic.control_widgets.PopupDis.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initiate the widget object create a direction link</span>
+
+<span class="sd">        The link is from the obj_catalog attribute of the layer object to the</span>
+<span class="sd">        data attribute in this widget.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">PopupDis</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="c1"># self.layout.width = &#39;100%&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dlink</span> <span class="o">=</span> <span class="n">dlink</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">layer</span><span class="p">,</span> <span class="s1">&#39;obj_catalog&#39;</span><span class="p">),</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;data&#39;</span><span class="p">))</span></div>
+
+    <span class="nd">@observe</span><span class="p">(</span><span class="s1">&#39;data&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_update_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">change</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Observe changes in ``data`` and update at front-end.&quot;&quot;&quot;</span>
+        <span class="n">old</span> <span class="o">=</span> <span class="n">change</span><span class="p">[</span><span class="s1">&#39;old&#39;</span><span class="p">]</span>
+        <span class="n">new</span> <span class="o">=</span> <span class="n">change</span><span class="p">[</span><span class="s1">&#39;new&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">old</span> <span class="ow">is</span> <span class="n">Undefined</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="k">if</span> <span class="n">new</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">new</span><span class="o">.</span><span class="n">equals</span><span class="p">(</span><span class="n">old</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_object_info</span> <span class="o">=</span> <span class="n">new</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="HomeButton"><a class="viewcode-back" href="../../vizic.html#vizic.control_widgets.HomeButton">[docs]</a><span class="k">class</span> <span class="nc">HomeButton</span><span class="p">(</span><span class="n">Button</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Home button Widget</span>
+
+<span class="sd">    Reset the map to initial zoom level and center.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">_view_name</span> <span class="o">=</span> <span class="n">Unicode</span><span class="p">(</span><span class="s1">&#39;HomeButtonView&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">_view_module</span> <span class="o">=</span> <span class="n">Unicode</span><span class="p">(</span><span class="s1">&#39;jupyter-vizic&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">_map</span> <span class="o">=</span> <span class="n">Instance</span><span class="p">(</span><span class="n">AstroMap</span><span class="p">,</span> <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<div class="viewcode-block" id="HomeButton.__init__"><a class="viewcode-back" href="../../vizic.html#vizic.control_widgets.HomeButton.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">map</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            map: An AstroMap object, which the widget is intended to control.</span>
+<span class="sd">            **kwargs: Arbitrary keyward arguments for ``Button``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">HomeButton</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_map</span> <span class="o">=</span> <span class="nb">map</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">layout</span> <span class="o">=</span> <span class="n">Layout</span><span class="p">(</span><span class="n">height</span><span class="o">=</span><span class="s1">&#39;30px&#39;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="s1">&#39;30px&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">on_click</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">handle_click</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="HomeButton.handle_click"><a class="viewcode-back" href="../../vizic.html#vizic.control_widgets.HomeButton.handle_click">[docs]</a>    <span class="k">def</span> <span class="nf">handle_click</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Reset the map&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_map</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_map</span><span class="o">.</span><span class="n">center_map</span><span class="p">()</span></div></div>
+
+
+<div class="viewcode-block" id="CFDropdown"><a class="viewcode-back" href="../../vizic.html#vizic.control_widgets.CFDropdown">[docs]</a><span class="k">class</span> <span class="nc">CFDropdown</span><span class="p">(</span><span class="n">Dropdown</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Dropdown menu for selecting colormapping field.&quot;&quot;&quot;</span>
+    <span class="n">_active</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+
+<div class="viewcode-block" id="CFDropdown.__init__"><a class="viewcode-back" href="../../vizic.html#vizic.control_widgets.CFDropdown.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">layer</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Extends ``Dropdown`` class from ``ipywidgets``.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            layer: The tileLayer that the menu is associated with.</span>
+<span class="sd">            **kwargs: Arbitrary keyward arguments for ``Dropdown``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">CFDropdown</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_layer</span> <span class="o">=</span> <span class="n">layer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="s1">&#39;Property: &#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">layout</span><span class="o">.</span><span class="n">width</span> <span class="o">=</span> <span class="s1">&#39;100%&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">options</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_layer</span><span class="o">.</span><span class="n">get_fields</span><span class="p">())</span>
+        <span class="n">dlink</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">_layer</span><span class="p">,</span> <span class="s1">&#39;custom_c&#39;</span><span class="p">),</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;_active&#39;</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="CFDropdown.link"><a class="viewcode-back" href="../../vizic.html#vizic.control_widgets.CFDropdown.link">[docs]</a>    <span class="k">def</span> <span class="nf">link</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Link the value of the dropdown to ``c_field`` in tileLayer&quot;&quot;&quot;</span>
+        <span class="c1"># either dlink or use @validate on python side instead</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">link</span> <span class="o">=</span> <span class="n">dlink</span><span class="p">((</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">),</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_layer</span><span class="p">,</span> <span class="s1">&#39;c_field&#39;</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="CFDropdown.unlink"><a class="viewcode-back" href="../../vizic.html#vizic.control_widgets.CFDropdown.unlink">[docs]</a>    <span class="k">def</span> <span class="nf">unlink</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Unlink for provided tileLayer&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">link</span><span class="o">.</span><span class="n">unlink</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_layer</span><span class="o">.</span><span class="n">c_field</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">link</span></div>
+
+    <span class="nd">@observe</span><span class="p">(</span><span class="s1">&#39;_active&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">update_active</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">change</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Update the active status of the menu.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">change</span><span class="p">[</span><span class="s1">&#39;new&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">unlink</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="n">change</span><span class="p">[</span><span class="s1">&#39;new&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">link</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="ColorMap"><a class="viewcode-back" href="../../vizic.html#vizic.control_widgets.ColorMap">[docs]</a><span class="k">class</span> <span class="nc">ColorMap</span><span class="p">(</span><span class="n">Dropdown</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Dropdown menu for selecting colormapping color space.&quot;&quot;&quot;</span>
+    <span class="n">_layer</span> <span class="o">=</span> <span class="n">Instance</span><span class="p">(</span><span class="n">GridLayer</span><span class="p">)</span>
+    <span class="n">colorSpaces</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;Spectral&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="s1">&#39;BrBG&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="s1">&#39;PRGn&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+        <span class="s1">&#39;PiYG&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+        <span class="s1">&#39;PuOr&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
+        <span class="s1">&#39;RdBu&#39;</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span>
+        <span class="s1">&#39;RdYlBu&#39;</span><span class="p">:</span> <span class="mi">7</span><span class="p">,</span>
+        <span class="s1">&#39;RdYlGn&#39;</span><span class="p">:</span><span class="mi">8</span><span class="p">,</span>
+        <span class="s1">&#39;Blues&#39;</span><span class="p">:</span><span class="mi">9</span><span class="p">,</span>
+        <span class="s1">&#39;Greens&#39;</span><span class="p">:</span><span class="mi">10</span><span class="p">,</span>
+        <span class="s1">&#39;Oranges&#39;</span><span class="p">:</span><span class="mi">11</span><span class="p">,</span>
+        <span class="s1">&#39;Purples&#39;</span><span class="p">:</span><span class="mi">12</span><span class="p">,</span>
+        <span class="s1">&#39;Reds&#39;</span><span class="p">:</span><span class="mi">13</span><span class="p">,</span>
+        <span class="s1">&#39;BuGn&#39;</span><span class="p">:</span><span class="mi">14</span><span class="p">,</span>
+        <span class="s1">&#39;BuPu&#39;</span><span class="p">:</span><span class="mi">15</span><span class="p">,</span>
+        <span class="s1">&#39;GnBu&#39;</span><span class="p">:</span><span class="mi">16</span><span class="p">,</span>
+        <span class="s1">&#39;OrRd&#39;</span><span class="p">:</span><span class="mi">17</span><span class="p">,</span>
+        <span class="s1">&#39;PuBuGn&#39;</span><span class="p">:</span><span class="mi">18</span><span class="p">,</span>
+        <span class="s1">&#39;PuBu&#39;</span><span class="p">:</span><span class="mi">19</span><span class="p">,</span>
+        <span class="s1">&#39;PuRd&#39;</span><span class="p">:</span><span class="mi">20</span><span class="p">,</span>
+        <span class="s1">&#39;RdPu&#39;</span><span class="p">:</span><span class="mi">21</span><span class="p">,</span>
+        <span class="s1">&#39;YlGnBu&#39;</span><span class="p">:</span><span class="mi">22</span><span class="p">,</span>
+        <span class="s1">&#39;YlGn&#39;</span><span class="p">:</span><span class="mi">23</span><span class="p">,</span>
+        <span class="s1">&#39;YlOrBr&#39;</span><span class="p">:</span><span class="mi">24</span><span class="p">,</span>
+        <span class="s1">&#39;YlOrRd&#39;</span><span class="p">:</span><span class="mi">25</span>
+    <span class="p">}</span>
+
+<div class="viewcode-block" id="ColorMap.__init__"><a class="viewcode-back" href="../../vizic.html#vizic.control_widgets.ColorMap.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gridlayer</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Extends ``Dropdown`` class from ``ipywidgets``.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            gridlayer: The base tileLayer the widget is associate with.</span>
+<span class="sd">            **kwargs: Arbitrary keyward arguments for ``Dropdown``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ColorMap</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_layer</span> <span class="o">=</span> <span class="n">gridlayer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="s1">&#39;ColorMap: &#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">layout</span><span class="o">.</span><span class="n">width</span> <span class="o">=</span> <span class="s1">&#39;100%&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">options</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">colorSpaces</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_layer</span><span class="o">.</span><span class="n">c_map</span>
+        <span class="n">dlink</span><span class="p">((</span><span class="bp">self</span><span class="p">,</span><span class="s1">&#39;value&#39;</span><span class="p">),</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_layer</span><span class="p">,</span> <span class="s1">&#39;c_map&#39;</span><span class="p">))</span></div></div>
+
+
+<div class="viewcode-block" id="FilterSlider"><a class="viewcode-back" href="../../vizic.html#vizic.control_widgets.FilterSlider">[docs]</a><span class="k">class</span> <span class="nc">FilterSlider</span><span class="p">(</span><span class="n">FloatRangeSlider</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;RangeSlider widget for filering displayed objects.</span>
+
+<span class="sd">    Ranges for selected field are automatically displayed on the slider. Move</span>
+<span class="sd">    the bars to filter out unwanted objects.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        readout_format(str): The format of the float numbers, which show the</span>
+<span class="sd">            value range of a particular property, on the slider.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">readout_format</span> <span class="o">=</span> <span class="n">Unicode</span><span class="p">(</span><span class="s1">&#39;.3f&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<div class="viewcode-block" id="FilterSlider.__init__"><a class="viewcode-back" href="../../vizic.html#vizic.control_widgets.FilterSlider.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">layer</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Extends ``FloatRangeSlider`` from ``ipywidgets``.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            layer: A gridLayer instance.</span>
+<span class="sd">            field(str): The property field of the catalog that the slider will</span>
+<span class="sd">                use for filtering.</span>
+<span class="sd">            **kwargs: Arbitrary keyword arguments for ``FloatRangeSlider``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">FilterSlider</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_layer</span> <span class="o">=</span> <span class="n">layer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">property</span> <span class="o">=</span> <span class="n">field</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">max</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mf">1e6</span><span class="p">,</span> <span class="mf">1e6</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">max</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_layer</span><span class="o">.</span><span class="n">get_min_max</span><span class="p">(</span><span class="n">field</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">min</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">max</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">step</span> <span class="o">=</span> <span class="mf">0.0001</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">layout</span><span class="o">.</span><span class="n">width</span> <span class="o">=</span> <span class="s1">&#39;100%&#39;</span></div>
+        <span class="c1"># self.link()</span>
+
+    <span class="k">def</span> <span class="nf">_change_field</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">property</span> <span class="o">=</span> <span class="n">field</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">max</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mf">1e6</span><span class="p">,</span> <span class="mf">1e6</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">max</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_layer</span><span class="o">.</span><span class="n">get_min_max</span><span class="p">(</span><span class="n">field</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">min</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">max</span><span class="p">]</span>
+
+<div class="viewcode-block" id="FilterSlider.link"><a class="viewcode-back" href="../../vizic.html#vizic.control_widgets.FilterSlider.link">[docs]</a>    <span class="k">def</span> <span class="nf">link</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Link slider values with the ``filter_range`` from tileLayer.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_layer</span><span class="o">.</span><span class="n">filter_property</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">property</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">link</span> <span class="o">=</span> <span class="n">dlink</span><span class="p">((</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">),</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_layer</span><span class="p">,</span> <span class="s1">&#39;filter_range&#39;</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="FilterSlider.unlink"><a class="viewcode-back" href="../../vizic.html#vizic.control_widgets.FilterSlider.unlink">[docs]</a>    <span class="k">def</span> <span class="nf">unlink</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Unlink from the provided tileLayer.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">link</span><span class="o">.</span><span class="n">unlink</span><span class="p">()</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">link</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_layer</span><span class="o">.</span><span class="n">filter_property</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span></div></div>
+
+
+<div class="viewcode-block" id="FilterWidget"><a class="viewcode-back" href="../../vizic.html#vizic.control_widgets.FilterWidget">[docs]</a><span class="k">class</span> <span class="nc">FilterWidget</span><span class="p">(</span><span class="n">Box</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A Dropdown menu and a rangeSlider wrapped in a box layout.</span>
+
+<span class="sd">    Select the field for filtering objects and perform the filter action in one</span>
+<span class="sd">    widget. The map will reset when a new field is chosen.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">filter_field</span> <span class="o">=</span> <span class="n">Unicode</span><span class="p">()</span>
+    <span class="n">_active</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="nd">@default</span><span class="p">(</span><span class="s1">&#39;layout&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_default_layout</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">Layout</span><span class="p">(</span><span class="n">display</span><span class="o">=</span><span class="s1">&#39;flex&#39;</span><span class="p">,</span> <span class="n">flex_flow</span><span class="o">=</span><span class="s1">&#39;column&#39;</span><span class="p">,</span><span class="n">align_items</span><span class="o">=</span><span class="s1">&#39;stretch&#39;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="s1">&#39;100%&#39;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="FilterWidget.__init__"><a class="viewcode-back" href="../../vizic.html#vizic.control_widgets.FilterWidget.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">layer</span><span class="p">,</span> <span class="o">*</span><span class="n">pargs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Extends ``Box`` from ``ipywidgets``.</span>
+
+<span class="sd">        Two links are created: 1) link the dropDown menu with the ``filter_field``</span>
+<span class="sd">        attribute from the tileLayer. 2) link the ``filter_obj`` attribute from</span>
+<span class="sd">        the tileLayer to the ``_active`` status attribute in this widget.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            layer: A gridLayer instance.</span>
+<span class="sd">            *args: Variable length argument list for ``Box``.</span>
+<span class="sd">            **kwargs: Arbitrary keyword arguments for ``Box``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">FilterWidget</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">pargs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_layer</span> <span class="o">=</span> <span class="n">layer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dropDown</span> <span class="o">=</span> <span class="n">Dropdown</span><span class="p">(</span><span class="n">options</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_layer</span><span class="o">.</span><span class="n">get_fields</span><span class="p">()),</span> <span class="n">width</span><span class="o">=</span><span class="s1">&#39;100%&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">slider</span> <span class="o">=</span> <span class="n">FilterSlider</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dropDown</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">children</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dropDown</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">slider</span><span class="p">)</span>
+        <span class="n">dlink</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">dropDown</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">),(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;filter_field&#39;</span><span class="p">))</span>
+        <span class="n">dlink</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">_layer</span><span class="p">,</span><span class="s1">&#39;filter_obj&#39;</span><span class="p">),</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;_active&#39;</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="FilterWidget.link"><a class="viewcode-back" href="../../vizic.html#vizic.control_widgets.FilterWidget.link">[docs]</a>    <span class="k">def</span> <span class="nf">link</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Link the slider with the provided tileLayer.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">slider</span><span class="o">.</span><span class="n">link</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="FilterWidget.unlink"><a class="viewcode-back" href="../../vizic.html#vizic.control_widgets.FilterWidget.unlink">[docs]</a>    <span class="k">def</span> <span class="nf">unlink</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Unlink slider from the tileLayer.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">slider</span><span class="o">.</span><span class="n">unlink</span><span class="p">()</span></div>
+
+    <span class="nd">@observe</span><span class="p">(</span><span class="s1">&#39;filter_field&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">update_field</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">change</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Observe changes in the dropDown menu and updates&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">change</span><span class="p">[</span><span class="s1">&#39;new&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_layer</span><span class="o">.</span><span class="n">filter_property</span> <span class="o">=</span> <span class="n">change</span><span class="p">[</span><span class="s1">&#39;new&#39;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">slider</span><span class="o">.</span><span class="n">_change_field</span><span class="p">(</span><span class="n">change</span><span class="p">[</span><span class="s1">&#39;new&#39;</span><span class="p">])</span>
+
+    <span class="nd">@observe</span><span class="p">(</span><span class="s1">&#39;_active&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">update_active</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">change</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Unlink this widget from layer if ``_active`` changes to False.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">change</span><span class="p">[</span><span class="s1">&#39;new&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">unlink</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="FilterBox"><a class="viewcode-back" href="../../vizic.html#vizic.control_widgets.FilterBox">[docs]</a><span class="k">class</span> <span class="nc">FilterBox</span><span class="p">(</span><span class="n">Box</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A box layout wrapping a FilterSlider object.&quot;&quot;&quot;</span>
+    <span class="nd">@default</span><span class="p">(</span><span class="s1">&#39;layout&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_default_layout</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">Layout</span><span class="p">(</span><span class="n">display</span><span class="o">=</span><span class="s1">&#39;flex&#39;</span><span class="p">,</span> <span class="n">align_items</span><span class="o">=</span><span class="s1">&#39;stretch&#39;</span><span class="p">,</span> <span class="n">justify_content</span><span class="o">=</span><span class="s1">&#39;space_between&#39;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="FilterBox.__init__"><a class="viewcode-back" href="../../vizic.html#vizic.control_widgets.FilterBox.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">layer</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="o">*</span><span class="n">pargs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Extends ``Box`` from ``ipywidgets``.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            layer: A gridLayer instance.</span>
+<span class="sd">            field(str): The property field of the catalog that the slider will</span>
+<span class="sd">                use for filtering.</span>
+<span class="sd">            *args: Variable length argument list for ``Box``.</span>
+<span class="sd">            **kwargs: Arbitrary keyword arguments for ``Box``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">FilterBox</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">pargs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">label</span> <span class="o">=</span> <span class="n">Label</span><span class="p">(</span><span class="n">field</span><span class="o">.</span><span class="n">upper</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="o">.</span><span class="n">padding</span> <span class="o">=</span> <span class="s1">&#39;7px 2px 2px 2px&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">slider</span> <span class="o">=</span> <span class="n">FilterSlider</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="n">field</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">children</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">slider</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">link</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">slider</span><span class="o">.</span><span class="n">link</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">unlink</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">slider</span><span class="o">.</span><span class="n">unlink</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="SelectionTrig"><a class="viewcode-back" href="../../vizic.html#vizic.control_widgets.SelectionTrig">[docs]</a><span class="k">class</span> <span class="nc">SelectionTrig</span><span class="p">(</span><span class="n">ToggleButton</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A control widget to trigger lasso selection&quot;&quot;&quot;</span>
+    <span class="n">_view_name</span> <span class="o">=</span> <span class="n">Unicode</span><span class="p">(</span><span class="s1">&#39;SelectionButtonView&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">_view_module</span> <span class="o">=</span> <span class="n">Unicode</span><span class="p">(</span><span class="s1">&#39;jupyter-vizic&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">_map</span> <span class="o">=</span> <span class="n">Instance</span><span class="p">(</span><span class="n">AstroMap</span><span class="p">,</span> <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SelectionTrig.__init__"><a class="viewcode-back" href="../../vizic.html#vizic.control_widgets.SelectionTrig.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">map</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Extends ``ToggleButton`` from ``ipywidgets``.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            map: An AstroMap map object that the trigger widget is associated</span>
+<span class="sd">                with.</span>
+<span class="sd">            **kwargs: Arbitray keyword arguments for ``ToggleButton``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SelectionTrig</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_map</span> <span class="o">=</span> <span class="nb">map</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">layout</span> <span class="o">=</span> <span class="n">Layout</span><span class="p">(</span><span class="n">height</span><span class="o">=</span><span class="s1">&#39;30px&#39;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="s1">&#39;30px&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SelectionTrig.link"><a class="viewcode-back" href="../../vizic.html#vizic.control_widgets.SelectionTrig.link">[docs]</a>    <span class="k">def</span> <span class="nf">link</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Link the trigger to target AstroMap object&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">link</span> <span class="o">=</span> <span class="n">link</span><span class="p">((</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">),</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_map</span><span class="p">,</span> <span class="s1">&#39;selection&#39;</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="SelectionTrig.unlink"><a class="viewcode-back" href="../../vizic.html#vizic.control_widgets.SelectionTrig.unlink">[docs]</a>    <span class="k">def</span> <span class="nf">unlink</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Unlink from the provided AstroMap&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">link</span><span class="o">.</span><span class="n">unlink</span><span class="p">()</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">link</span></div></div>
+
+
+<div class="viewcode-block" id="GetDataButton"><a class="viewcode-back" href="../../vizic.html#vizic.control_widgets.GetDataButton">[docs]</a><span class="k">class</span> <span class="nc">GetDataButton</span><span class="p">(</span><span class="n">Button</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Getting selected data.</span>
+
+<span class="sd">    Clicking this button to query the database for data selected using the</span>
+<span class="sd">    lasso-like selection tool.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">_view_name</span> <span class="o">=</span> <span class="n">Unicode</span><span class="p">(</span><span class="s1">&#39;GetDataButtonView&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">_view_module</span> <span class="o">=</span> <span class="n">Unicode</span><span class="p">(</span><span class="s1">&#39;jupyter-vizic&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">_layer</span> <span class="o">=</span> <span class="n">Instance</span><span class="p">(</span><span class="n">GridLayer</span><span class="p">)</span>
+
+<div class="viewcode-block" id="GetDataButton.__init__"><a class="viewcode-back" href="../../vizic.html#vizic.control_widgets.GetDataButton.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">layer</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Extends ``Button`` from ``ipywidgets``.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            layer: The tileLayer that the button is asccoiate with.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">GetDataButton</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_layer</span> <span class="o">=</span> <span class="n">layer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">layout</span> <span class="o">=</span> <span class="n">Layout</span><span class="p">(</span><span class="n">height</span><span class="o">=</span><span class="s1">&#39;30px&#39;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="s1">&#39;30px&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">on_click</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">handle_click</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">handle_click</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_layer</span><span class="o">.</span><span class="n">_map</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_layer</span><span class="o">.</span><span class="n">_map</span><span class="o">.</span><span class="n">selection</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">disabled</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_layer</span><span class="o">.</span><span class="n">_query_selection</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">disabled</span> <span class="o">=</span> <span class="kc">False</span></div>
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Weixiang Yu.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.4',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

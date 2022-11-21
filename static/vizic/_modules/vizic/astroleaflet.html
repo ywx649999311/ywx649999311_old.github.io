@@ -1,0 +1,942 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>vizic.astroleaflet &mdash; Vizic 0.4 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="Vizic 0.4 documentation" href="../../index.html"/>
+        <link rel="up" title="Module code" href="../index.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> Vizic
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.4
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../vizic.html">Vizic API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../extensions.html">Extensions</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Vizic</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>vizic.astroleaflet</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for vizic.astroleaflet</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
+<span class="kn">from</span> <span class="nn">traitlets</span> <span class="k">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">ipywidgets</span> <span class="k">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">.leaflet</span> <span class="k">import</span> <span class="n">Map</span><span class="p">,</span> <span class="n">RasterLayer</span><span class="p">,</span> <span class="n">Layer</span>
+<span class="kn">import</span> <span class="nn">pymongo</span> <span class="k">as</span> <span class="nn">pmg</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">uuid</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">requests</span>
+<span class="kn">from</span> <span class="nn">notebook.utils</span> <span class="k">import</span> <span class="n">url_path_join</span>
+<span class="kn">from</span> <span class="nn">.utils</span> <span class="k">import</span> <span class="n">cut_tree</span><span class="p">,</span> <span class="n">get_mst</span><span class="p">,</span> <span class="n">get_m_index</span><span class="p">,</span> <span class="n">get_vert_bbox</span>
+<span class="kn">from</span> <span class="nn">.connection</span> <span class="k">import</span> <span class="n">Collection</span>
+
+
+<div class="viewcode-block" id="AstroMap"><a class="viewcode-back" href="../../vizic.html#vizic.astroleaflet.AstroMap">[docs]</a><span class="k">class</span> <span class="nc">AstroMap</span><span class="p">(</span><span class="n">Map</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;The map class, in charge of the overall operations.</span>
+
+<span class="sd">    AstroMap extends the ``Map`` class from ``ipyleaflet`` with added rich</span>
+<span class="sd">    features to display and interact with visualized astronomical catalogs and</span>
+<span class="sd">    custom overlays.</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        Class attribute ``center`` is always in the form of ``[lat, lng]``.</span>
+
+<span class="sd">    Keyword Args:</span>
+<span class="sd">        zoom(int): Initial zoom for the map. Defaults to 1.</span>
+<span class="sd">        max_zoom(int): Allowd maximum zoom level for the map. Defaults to 12.</span>
+<span class="sd">        position_control(bool): Whether to show projected mouse position</span>
+<span class="sd">            on the left bottom corner of the map window. Defaults to True.</span>
+<span class="sd">        fullscreen_control(bool): Whether to allow full screen mode. Defaults</span>
+<span class="sd">            to True.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="nd">@default</span><span class="p">(</span><span class="s1">&#39;layout&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_default_layout</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">Layout</span><span class="p">(</span><span class="n">height</span><span class="o">=</span><span class="s1">&#39;512px&#39;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="s1">&#39;512px&#39;</span><span class="p">)</span>
+    <span class="n">inertia</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">o</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">scroll_wheel_zoom</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">o</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">wheel_debounce_time</span> <span class="o">=</span> <span class="n">Int</span><span class="p">(</span><span class="mi">60</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">o</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">wheel_px_per_zoom_level</span> <span class="o">=</span> <span class="n">Int</span><span class="p">(</span><span class="mi">60</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">o</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">zoom</span> <span class="o">=</span> <span class="n">Int</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">o</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">max_zoom</span> <span class="o">=</span> <span class="n">Int</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">o</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">position_control</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">o</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">fullscreen_control</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">o</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">fade_animation</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">o</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">_des_crs</span> <span class="o">=</span> <span class="n">List</span><span class="p">(</span><span class="n">help</span><span class="o">=</span><span class="s1">&#39;Coordinate system specification&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">pan_loc</span> <span class="o">=</span> <span class="n">List</span><span class="p">(</span><span class="n">help</span><span class="o">=</span><span class="s1">&#39;Target coordinate for panning&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">selection</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Lasso-like selection status(on/off)&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">s_bounds</span> <span class="o">=</span> <span class="n">List</span><span class="p">(</span><span class="n">help</span><span class="o">=</span><span class="s1">&#39;LatLngBounds for selection tool&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="c1"># pan_ready = Bool(False).tag(sync=True)</span>
+
+<div class="viewcode-block" id="AstroMap.__init__"><a class="viewcode-back" href="../../vizic.html#vizic.astroleaflet.AstroMap.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            **kwargs: Optional arguments for map settings.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">AstroMap</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_tiles</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">default_tiles</span><span class="o">.</span><span class="n">_map</span> <span class="o">=</span> <span class="bp">self</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_des_crs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_tiles</span><span class="o">.</span><span class="n">_des_crs</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">max_zoom</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_tiles</span><span class="o">.</span><span class="n">max_zoom</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">center</span> <span class="o">==</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">center</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_tiles</span><span class="o">.</span><span class="n">center</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">default_tiles</span><span class="o">.</span><span class="n">visible</span> <span class="o">=</span> <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="AstroMap.add_layer"><a class="viewcode-back" href="../../vizic.html#vizic.astroleaflet.AstroMap.add_layer">[docs]</a>    <span class="k">def</span> <span class="nf">add_layer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">layer</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add layer to map.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            layer: layer object to be added to the map.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">layer</span><span class="o">.</span><span class="n">model_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">layer_ids</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">LayerException</span><span class="p">(</span><span class="s1">&#39;layer already on map: </span><span class="si">%r</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">layer</span><span class="p">)</span>
+        <span class="n">layer</span><span class="o">.</span><span class="n">_map</span> <span class="o">=</span> <span class="bp">self</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="n">GridLayer</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_des_crs</span> <span class="o">=</span> <span class="n">layer</span><span class="o">.</span><span class="n">_des_crs</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">max_zoom</span> <span class="o">=</span> <span class="n">layer</span><span class="o">.</span><span class="n">max_zoom</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">center</span> <span class="o">=</span> <span class="n">layer</span><span class="o">.</span><span class="n">center</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">layers</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">([</span><span class="n">l</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">layer</span><span class="p">])</span>
+        <span class="n">layer</span><span class="o">.</span><span class="n">visible</span> <span class="o">=</span> <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="AstroMap.remove_layer"><a class="viewcode-back" href="../../vizic.html#vizic.astroleaflet.AstroMap.remove_layer">[docs]</a>    <span class="k">def</span> <span class="nf">remove_layer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">layer</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Remove layer from map.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            layer: layer object to be removed from the map.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">layer</span><span class="o">.</span><span class="n">model_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">layer_ids</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">LayerException</span><span class="p">(</span><span class="s1">&#39;layer not on map: </span><span class="si">%r</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">layer</span><span class="p">)</span>
+        <span class="c1"># if isinstance(layer, GridLayer):</span>
+        <span class="c1">#     self._des_crs = [0, 0, 1, 1]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">layers</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">([</span><span class="n">l</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">layers</span> <span class="k">if</span> <span class="n">l</span><span class="o">.</span><span class="n">model_id</span> <span class="o">!=</span> <span class="n">layer</span><span class="o">.</span><span class="n">model_id</span><span class="p">])</span>
+        <span class="n">layer</span><span class="o">.</span><span class="n">visible</span> <span class="o">=</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="AstroMap.clear_layers"><a class="viewcode-back" href="../../vizic.html#vizic.astroleaflet.AstroMap.clear_layers">[docs]</a>    <span class="k">def</span> <span class="nf">clear_layers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Remove all existing layers from map.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">layers</span> <span class="o">=</span> <span class="p">()</span></div>
+
+<div class="viewcode-block" id="AstroMap.center_map"><a class="viewcode-back" href="../../vizic.html#vizic.astroleaflet.AstroMap.center_map">[docs]</a>    <span class="k">def</span> <span class="nf">center_map</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Reset the zoom and location of the map.&quot;&quot;&quot;</span>
+        <span class="n">center</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">center</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_des_crs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="mi">128</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_des_crs</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+            <span class="n">center</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_des_crs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="mi">128</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_des_crs</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fly_to</span><span class="p">(</span><span class="n">center</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;No base tiles added!&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AstroMap.fly_to"><a class="viewcode-back" href="../../vizic.html#vizic.astroleaflet.AstroMap.fly_to">[docs]</a>    <span class="k">def</span> <span class="nf">fly_to</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lnglat</span><span class="p">,</span> <span class="n">zoom</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Set view of the map to a specified zoom and location.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            lnglat: A list containing the RA and DEC for target locations.</span>
+<span class="sd">            zoom: An integer representing the target zoom level.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">latlng</span> <span class="o">=</span> <span class="p">[</span><span class="n">lnglat</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">lnglat</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+        <span class="n">latlng</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">zoom</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pan_loc</span> <span class="o">=</span> <span class="n">latlng</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pan_loc</span> <span class="o">=</span> <span class="p">[]</span></div></div>
+
+
+<div class="viewcode-block" id="GridLayer"><a class="viewcode-back" href="../../vizic.html#vizic.astroleaflet.GridLayer">[docs]</a><span class="k">class</span> <span class="nc">GridLayer</span><span class="p">(</span><span class="n">RasterLayer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Base tilelayer class for hosting visualized catalogs.</span>
+
+<span class="sd">    Keyword Args:</span>
+<span class="sd">        df: A pandas dataframe where the data to be visualized is stored.</span>
+<span class="sd">        min_zoom(int): Minimum zoom level for the tileLayer. Defaults to 0.</span>
+<span class="sd">        max_zoom(int): Maximum zoom level for the tileLayer. Defaults to 8.</span>
+<span class="sd">        collection(str): The name for the MongoDB documents collection</span>
+<span class="sd">            that stores pre-ingested data.</span>
+<span class="sd">        color(str): Preset color for visualized objects. Defaults to red.</span>
+<span class="sd">        df_rad(int): The raidus of the circles representing objects in the</span>
+<span class="sd">            catalog when size information is provided. Defaults to 2.</span>
+<span class="sd">        scale_r(float): A float number indicating the scaling ratio for</span>
+<span class="sd">            visualized objects. Defaults to 1.0.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">_view_name</span> <span class="o">=</span> <span class="n">Unicode</span><span class="p">(</span><span class="s1">&#39;LeafletGridLayerView&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">_model_name</span> <span class="o">=</span> <span class="n">Unicode</span><span class="p">(</span><span class="s1">&#39;LeafletGridLayerModel&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">bottom</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">_des_crs</span> <span class="o">=</span> <span class="n">List</span><span class="p">()</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">Sync</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">Instance</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">min_zoom</span> <span class="o">=</span> <span class="n">Int</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">o</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">max_zoom</span> <span class="o">=</span> <span class="n">Int</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">o</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="c1"># tile_size = Int(256).tag(sync=True, o=True)</span>
+    <span class="n">detect_retina</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">o</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">collection</span> <span class="o">=</span> <span class="n">Unicode</span><span class="p">()</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">o</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">x_range</span> <span class="o">=</span> <span class="n">Float</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">o</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">y_range</span> <span class="o">=</span> <span class="n">Float</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">o</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">color</span> <span class="o">=</span> <span class="n">Unicode</span><span class="p">(</span><span class="s1">&#39;red&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">o</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="c1"># color object by property value</span>
+    <span class="n">custom_c</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">c_min_max</span> <span class="o">=</span> <span class="n">List</span><span class="p">()</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">c_field</span> <span class="o">=</span> <span class="n">Unicode</span><span class="p">()</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">c_map</span> <span class="o">=</span> <span class="n">Int</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">radius</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">o</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">point</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">o</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">df_rad</span> <span class="o">=</span> <span class="n">Int</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">o</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">scale_r</span> <span class="o">=</span> <span class="n">Float</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">o</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">c_lock</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Lock on objects coloring method.&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># color by catalogs</span>
+    <span class="n">c_by_c</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Color the map by different catalogs&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">o</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="c1"># filter by property range</span>
+    <span class="n">filter_obj</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Fileter object by property value range&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">filter_property</span> <span class="o">=</span> <span class="n">Unicode</span><span class="p">(</span><span class="n">help</span><span class="o">=</span><span class="s2">&quot;The proerty field used to sort objects&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">filter_range</span> <span class="o">=</span> <span class="n">List</span><span class="p">()</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">center</span> <span class="o">=</span> <span class="n">List</span><span class="p">()</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">obj_catalog</span> <span class="o">=</span> <span class="n">Instance</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span> <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">__minMax</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">_popup_callbacks</span> <span class="o">=</span> <span class="n">Instance</span><span class="p">(</span><span class="n">CallbackDispatcher</span><span class="p">,</span> <span class="p">())</span>
+
+    <span class="nd">@observe</span><span class="p">(</span><span class="s1">&#39;c_by_c&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_update_cat_color</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">change</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">change</span><span class="p">[</span><span class="s1">&#39;new&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">custom_c</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">c_lock</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">c_lock</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="nd">@observe</span><span class="p">(</span><span class="s1">&#39;custom_c&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_update_color_src</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">change</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">change</span><span class="p">[</span><span class="s1">&#39;new&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">c_min_max</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">c_by_c</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">c_lock</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">c_min_max</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">c_lock</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="nd">@validate</span><span class="p">(</span><span class="s1">&#39;c_field&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_valid_field</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">proposal</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">custom_c</span> <span class="ow">is</span> <span class="kc">False</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">proposal</span><span class="p">[</span><span class="s1">&#39;value&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">TraitError</span><span class="p">(</span><span class="s1">&#39;Activate color by properties before &#39;</span> <span class="o">+</span>
+                             <span class="s1">&#39;assigning a field to use&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">proposal</span><span class="p">[</span><span class="s1">&#39;value&#39;</span><span class="p">]</span>
+
+    <span class="nd">@observe</span><span class="p">(</span><span class="s1">&#39;c_field&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_update_c_min_max</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">change</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">custom_c</span> <span class="ow">is</span> <span class="kc">True</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">c_field</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_fields</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">c_min_max</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__minMax</span><span class="p">[</span><span class="n">change</span><span class="p">[</span><span class="s1">&#39;new&#39;</span><span class="p">]]</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">custom_c</span> <span class="ow">is</span> <span class="kc">False</span> <span class="ow">and</span> <span class="n">change</span><span class="p">[</span><span class="s1">&#39;new&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Color Field (</span><span class="si">{}</span><span class="s1">) not valid!&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">c_field</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">c_field</span> <span class="o">=</span> <span class="n">change</span><span class="p">[</span><span class="s1">&#39;old&#39;</span><span class="p">]</span>
+
+    <span class="nd">@observe</span><span class="p">(</span><span class="s1">&#39;filter_obj&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_update_filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">change</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">change</span><span class="p">[</span><span class="s1">&#39;new&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">True</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">filter_property</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_fields</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">filter_range</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__minMax</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">filter_property</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">change</span><span class="p">[</span><span class="s1">&#39;new&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">filter_range</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="c1"># self.filter_property = &#39;&#39;</span>
+
+    <span class="nd">@observe</span><span class="p">(</span><span class="s1">&#39;filter_property&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_update_property</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">change</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">filter_obj</span> <span class="ow">is</span> <span class="kc">True</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">filter_property</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_fields</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">filter_range</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__minMax</span><span class="p">[</span><span class="n">change</span><span class="p">[</span><span class="s1">&#39;new&#39;</span><span class="p">]]</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">filter_property</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_fields</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">filter_property</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+
+<div class="viewcode-block" id="GridLayer.__init__"><a class="viewcode-back" href="../../vizic.html#vizic.astroleaflet.GridLayer.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">connection</span><span class="p">,</span> <span class="n">coll_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">map_dict</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            connection: A wrapper for MongoDB connections.</span>
+<span class="sd">            coll_name(str): The collection name for a new catalog to be ingested</span>
+<span class="sd">                into the database. Default is None.</span>
+<span class="sd">            **kwargs: Arbitrary keyword arguments.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">GridLayer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">db</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">db</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Mongodb connection error! Check connection object!&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">map_dict</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">map_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">map_dict</span><span class="p">[</span><span class="n">k</span><span class="p">]]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">connection</span> <span class="o">=</span> <span class="n">connection</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_server_url</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">_url</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_checkInput</span><span class="p">(</span><span class="n">coll_name</span><span class="p">,</span> <span class="n">map_dict</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">push_data</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_server_url</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_popup_callbacks</span><span class="o">.</span><span class="n">register_callback</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_query_obj</span><span class="p">,</span> <span class="n">remove</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">on_msg</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_handle_leaflet_event</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Mongodb collection name is </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">collection</span><span class="p">))</span></div>
+
+    <span class="k">def</span> <span class="nf">_checkInput</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coll_name</span><span class="p">,</span> <span class="n">map_dict</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Check data source.</span>
+
+<span class="sd">        If a string specifying the collection name for stored catalog is given</span>
+<span class="sd">        in the instructor, the catalog metadata will be retrived from the</span>
+<span class="sd">        database and assigned to the GridLayer object. If a pandas dataframe</span>
+<span class="sd">        containing the catalog is provided in the instructor, the catalog will</span>
+<span class="sd">        be formated and ingested into the database using provided ``coll_name``</span>
+<span class="sd">        or a randomly generated string by ``uuid``.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            coll_name: MongoDB collection name for the new catalog.</span>
+<span class="sd">            map_dict(dict): Dataframe columns mapping dictionary.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">coll</span> <span class="o">=</span> <span class="n">Collection</span><span class="p">()</span>
+        <span class="n">exist_colls</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">collection_names</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">collection</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">collection</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">exist_colls</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Provided collection does not exist!&#39;</span><span class="p">)</span>
+            <span class="n">coll</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">read_meta</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">collection</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">clms</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">)]</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">set</span><span class="p">([</span><span class="s1">&#39;RA&#39;</span><span class="p">,</span> <span class="s1">&#39;DEC&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">clms</span><span class="p">)):</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;RA, DEC is required for visualization!&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">set</span><span class="p">([</span><span class="s1">&#39;A_IMAGE&#39;</span><span class="p">,</span> <span class="s1">&#39;B_IMAGE&#39;</span><span class="p">,</span> <span class="s1">&#39;THETA_IMAGE&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">clms</span><span class="p">)):</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;No shape information provided&#39;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="s1">&#39;RADIUS&#39;</span> <span class="ow">in</span> <span class="n">clms</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Will use radius for filtering!&#39;</span><span class="p">)</span>
+                    <span class="n">coll</span><span class="o">.</span><span class="n">radius</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Object as point, slow performance!&#39;</span><span class="p">)</span>
+                    <span class="n">coll</span><span class="o">.</span><span class="n">point</span> <span class="o">=</span> <span class="kc">True</span>
+
+            <span class="k">if</span> <span class="n">coll_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">coll_name</span> <span class="ow">in</span> <span class="n">exist_colls</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Collectoin name already exists, try to use a different name or use existing collection.&#39;</span><span class="p">)</span>
+            <span class="n">df_r</span><span class="p">,</span> <span class="n">coll</span><span class="o">.</span><span class="n">_des_crs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">_data_prep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">,</span> <span class="n">coll</span><span class="p">)</span>
+            <span class="n">coll</span><span class="o">.</span><span class="n">x_range</span> <span class="o">=</span> <span class="n">coll</span><span class="o">.</span><span class="n">_des_crs</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">*</span><span class="mi">256</span>
+            <span class="n">coll</span><span class="o">.</span><span class="n">y_range</span> <span class="o">=</span> <span class="n">coll</span><span class="o">.</span><span class="n">_des_crs</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">*</span><span class="mi">256</span>
+
+            <span class="c1"># drop created mapped columns before ingecting data</span>
+            <span class="k">if</span> <span class="n">map_dict</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">col_keys</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">map_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+                            <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;RA&#39;</span><span class="p">,</span> <span class="s1">&#39;DEC&#39;</span><span class="p">]]</span>
+                <span class="n">df_r</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">col_keys</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">col_keys</span><span class="p">:</span>
+                    <span class="n">coll</span><span class="o">.</span><span class="n">_minMax</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+            <span class="c1"># check if name given, if not using uuid</span>
+            <span class="k">if</span> <span class="n">coll_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">coll</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">coll_name</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">coll_id</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">())</span>
+                <span class="n">coll</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">coll_id</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">_insert_data</span><span class="p">(</span><span class="n">df_r</span><span class="p">,</span> <span class="n">coll</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Need to provide a collection name or a pandas dataframe!&#39;</span><span class="p">)</span>
+
+        <span class="c1"># now assign collection object values to GridLayer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_des_crs</span> <span class="o">=</span> <span class="n">coll</span><span class="o">.</span><span class="n">_des_crs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x_range</span> <span class="o">=</span> <span class="n">coll</span><span class="o">.</span><span class="n">x_range</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y_range</span> <span class="o">=</span> <span class="n">coll</span><span class="o">.</span><span class="n">y_range</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">point</span> <span class="o">=</span> <span class="n">coll</span><span class="o">.</span><span class="n">point</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">radius</span> <span class="o">=</span> <span class="n">coll</span><span class="o">.</span><span class="n">radius</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__minMax</span> <span class="o">=</span> <span class="n">coll</span><span class="o">.</span><span class="n">_minMax</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cat_ct</span> <span class="o">=</span> <span class="n">coll</span><span class="o">.</span><span class="n">cat_ct</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">collection</span> <span class="o">=</span> <span class="n">coll</span><span class="o">.</span><span class="n">name</span>
+
+        <span class="c1"># The center is required, don&#39;t remove</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">center</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_des_crs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">y_range</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_des_crs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">x_range</span><span class="o">/</span><span class="mi">2</span><span class="p">]</span>
+
+<div class="viewcode-block" id="GridLayer.push_data"><a class="viewcode-back" href="../../vizic.html#vizic.astroleaflet.GridLayer.push_data">[docs]</a>    <span class="k">def</span> <span class="nf">push_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Update server extension with newly displayed catalog.</span>
+
+<span class="sd">        Send basic information of this tileLayer using Rest API to the server</span>
+<span class="sd">        for directing data request from the front-end.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            url(str): The Jupyter server address.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">mRange</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x_range</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_range</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span>
+        <span class="n">body</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;collection&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">collection</span><span class="p">,</span>
+            <span class="s1">&#39;mrange&#39;</span><span class="p">:</span> <span class="n">mRange</span><span class="p">,</span>
+            <span class="s1">&#39;maxzoom&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_zoom</span>
+        <span class="p">}</span>
+        <span class="n">push_url</span> <span class="o">=</span> <span class="n">url_path_join</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="s1">&#39;/rangeinfo/&#39;</span><span class="p">)</span>
+        <span class="n">req</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">push_url</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">body</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GridLayer.update_meta"><a class="viewcode-back" href="../../vizic.html#vizic.astroleaflet.GridLayer.update_meta">[docs]</a>    <span class="k">def</span> <span class="nf">update_meta</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Update meta information after new data added.&quot;&quot;&quot;</span>
+
+        <span class="n">coll</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">read_meta</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">collection</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_des_crs</span> <span class="o">=</span> <span class="n">coll</span><span class="o">.</span><span class="n">_des_crs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x_range</span> <span class="o">=</span> <span class="n">coll</span><span class="o">.</span><span class="n">x_range</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y_range</span> <span class="o">=</span> <span class="n">coll</span><span class="o">.</span><span class="n">y_range</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__minMax</span> <span class="o">=</span> <span class="n">coll</span><span class="o">.</span><span class="n">_minMax</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cat_ct</span> <span class="o">=</span> <span class="n">coll</span><span class="o">.</span><span class="n">cat_ct</span>
+        <span class="c1"># update info at Jupyter server</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">push_data</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_server_url</span><span class="p">)</span>
+        <span class="c1"># update the AstroMap meta</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_map</span><span class="o">.</span><span class="n">center</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">center</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_des_crs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">y_range</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_des_crs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">x_range</span><span class="o">/</span><span class="mi">2</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_map</span><span class="o">.</span><span class="n">_des_crs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_des_crs</span></div>
+
+    <span class="k">def</span> <span class="nf">_handle_leaflet_event</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">buffers</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Handle leaflet events trigged.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">content</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;event&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;popup: click&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_popup_callbacks</span><span class="p">(</span><span class="o">**</span><span class="n">content</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_query_obj</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Query database for clicked object.&quot;&quot;&quot;</span>
+        <span class="n">body</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;coll&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">collection</span><span class="p">,</span><span class="s1">&#39;RA&#39;</span><span class="p">:</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;RA&#39;</span><span class="p">],</span> <span class="s1">&#39;DEC&#39;</span><span class="p">:</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;DEC&#39;</span><span class="p">]}</span>
+        <span class="n">popup_url</span> <span class="o">=</span> <span class="n">url_path_join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_server_url</span><span class="p">,</span> <span class="s1">&#39;/objectPop/&#39;</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">popup_url</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">body</span><span class="p">)</span>
+        <span class="n">pop_dict</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">text</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">obj_catalog</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">pop_dict</span><span class="p">)</span>
+
+<div class="viewcode-block" id="GridLayer.get_fields"><a class="viewcode-back" href="../../vizic.html#vizic.astroleaflet.GridLayer.get_fields">[docs]</a>    <span class="k">def</span> <span class="nf">get_fields</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return float properties in the catalog.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__minMax</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="GridLayer.get_min_max"><a class="viewcode-back" href="../../vizic.html#vizic.astroleaflet.GridLayer.get_min_max">[docs]</a>    <span class="k">def</span> <span class="nf">get_min_max</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the min/max value in specified catalog property.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            field: The name of the specified property.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            Exception: If the provided property is not a float property or such</span>
+<span class="sd">                a property doesn&#39;t exist in the catalog.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">field</span> <span class="o">=</span> <span class="n">field</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">field</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_fields</span><span class="p">()):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__minMax</span><span class="p">[</span><span class="n">field</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Error: </span><span class="si">{}</span><span class="s1"> not in database!&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">field</span><span class="p">))</span></div>
+
+    <span class="k">def</span> <span class="nf">_query_selection</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Query selected objects.</span>
+
+<span class="sd">        Query the databaes for enclosed objects by the selection bound at the</span>
+<span class="sd">        frond-end. The query result is parsed into a pandas dataframe and</span>
+<span class="sd">        assigned to ``select_data`` attribute.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">selection_url</span> <span class="o">=</span> <span class="n">url_path_join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_server_url</span><span class="p">,</span> <span class="s1">&#39;/selection/&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_map</span><span class="o">.</span><span class="n">s_bounds</span> <span class="o">!=</span> <span class="p">[]:</span>
+            <span class="n">bounds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_map</span><span class="o">.</span><span class="n">s_bounds</span>
+            <span class="n">body</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s1">&#39;coll&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">collection</span><span class="p">,</span>
+                <span class="s1">&#39;swlng&#39;</span><span class="p">:</span> <span class="n">bounds</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                <span class="s1">&#39;swlat&#39;</span><span class="p">:</span> <span class="n">bounds</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
+                <span class="s1">&#39;nelng&#39;</span><span class="p">:</span> <span class="n">bounds</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                <span class="s1">&#39;nelat&#39;</span><span class="p">:</span> <span class="n">bounds</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span>
+            <span class="p">}</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">selection_url</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">body</span><span class="p">)</span>
+            <span class="n">selection_dict</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">select_data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">selection_dict</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;bounds for selection is empty&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="VoronoiLayer"><a class="viewcode-back" href="../../vizic.html#vizic.astroleaflet.VoronoiLayer">[docs]</a><span class="k">class</span> <span class="nc">VoronoiLayer</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Voronoi Diagram Layer.</span>
+
+<span class="sd">    Using the catalog data displayed by the GridLayer to compute and display</span>
+<span class="sd">    Voronoi Diagram.</span>
+
+<span class="sd">    Keyword Args:</span>
+<span class="sd">        color(str): Color for the overlayed diagram. Defaults to #88b21c.</span>
+<span class="sd">        svg_zoom(int): Initial zoom for projecting the Voronoi diagram onto the</span>
+<span class="sd">            screen. The higher the zoom the better the resolution and accuracy.</span>
+<span class="sd">            Defaults to 5.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">_view_name</span> <span class="o">=</span> <span class="n">Unicode</span><span class="p">(</span><span class="s1">&#39;LeafletVoronoiLayerView&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">_model_name</span> <span class="o">=</span> <span class="n">Unicode</span><span class="p">(</span><span class="s1">&#39;LeafletVoronoiLayerModel&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">voronoi_url</span> <span class="o">=</span> <span class="n">Unicode</span><span class="p">()</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">visible</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">color</span> <span class="o">=</span> <span class="n">Unicode</span><span class="p">(</span><span class="s1">&#39;#88b21c&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Color of the links&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">o</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">svg_zoom</span> <span class="o">=</span> <span class="n">Int</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;initial zoom for projection&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">o</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<div class="viewcode-block" id="VoronoiLayer.__init__"><a class="viewcode-back" href="../../vizic.html#vizic.astroleaflet.VoronoiLayer.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gridLayer</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            gridLayer: A gridLayer instance.</span>
+<span class="sd">            **kwargs: Arbitrary keyword arguments.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            Exception: If the gridLayer object doesn&#39;t have a connected</span>
+<span class="sd">                database.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">VoronoiLayer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">db</span> <span class="o">=</span> <span class="n">gridLayer</span><span class="o">.</span><span class="n">db</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Mongodb connection error! Check connection object!&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_server_url</span> <span class="o">=</span> <span class="n">gridLayer</span><span class="o">.</span><span class="n">_server_url</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">voronoi_url</span> <span class="o">=</span> <span class="n">url_path_join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_server_url</span><span class="p">,</span> <span class="s1">&#39;/voronoi/</span><span class="si">{}</span><span class="s1">.json&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">gridLayer</span><span class="o">.</span><span class="n">collection</span><span class="p">))</span></div></div>
+
+
+<div class="viewcode-block" id="DelaunayLayer"><a class="viewcode-back" href="../../vizic.html#vizic.astroleaflet.DelaunayLayer">[docs]</a><span class="k">class</span> <span class="nc">DelaunayLayer</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Delaunay Triangulation Layer.</span>
+
+<span class="sd">    Using the catalog data displayed by the GridLayer to compute and</span>
+<span class="sd">    display Delaunay Triangulation.</span>
+
+<span class="sd">    Keyword Args:</span>
+<span class="sd">        color(str): Color for the overlayed Triangulation. Defaults to blue.</span>
+<span class="sd">        svg_zoom(int): Initial zoom for projecting the Delaunay triangulation</span>
+<span class="sd">        onto the screen. The higher the zoom the better the resolution</span>
+<span class="sd">        and accuracy. Defaults to 5.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">_view_name</span> <span class="o">=</span> <span class="n">Unicode</span><span class="p">(</span><span class="s1">&#39;LeafletDelaunayLayerView&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">_model_name</span> <span class="o">=</span> <span class="n">Unicode</span><span class="p">(</span><span class="s1">&#39;LeafletDelaunayLayerModel&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">delaunay_url</span> <span class="o">=</span> <span class="n">Unicode</span><span class="p">()</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">visible</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">color</span> <span class="o">=</span> <span class="n">Unicode</span><span class="p">(</span><span class="s1">&#39;blue&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">o</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">svg_zoom</span> <span class="o">=</span> <span class="n">Int</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">o</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<div class="viewcode-block" id="DelaunayLayer.__init__"><a class="viewcode-back" href="../../vizic.html#vizic.astroleaflet.DelaunayLayer.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gridLayer</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            gridLayer: A gridLayer instance.</span>
+<span class="sd">            **kwargs: Arbitrary keyword arguments.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            Exception: If the gridLayer object doesn&#39;t have a</span>
+<span class="sd">                connected database.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">DelaunayLayer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">db</span> <span class="o">=</span> <span class="n">gridLayer</span><span class="o">.</span><span class="n">db</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Mongodb connection error! Check connection object!&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_server_url</span> <span class="o">=</span> <span class="n">gridLayer</span><span class="o">.</span><span class="n">_server_url</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">delaunay_url</span> <span class="o">=</span> <span class="n">url_path_join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_server_url</span><span class="p">,</span> <span class="s1">&#39;/voronoi/</span><span class="si">{}</span><span class="s1">.json&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">gridLayer</span><span class="o">.</span><span class="n">collection</span><span class="p">))</span></div></div>
+
+
+<div class="viewcode-block" id="HealpixLayer"><a class="viewcode-back" href="../../vizic.html#vizic.astroleaflet.HealpixLayer">[docs]</a><span class="k">class</span> <span class="nc">HealpixLayer</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Healpix grid Layer.</span>
+
+<span class="sd">    Using the catalog data displayed by a given tileLayer to compute</span>
+<span class="sd">    and display Healpix pixelization grid.</span>
+
+<span class="sd">    Keyword Args:</span>
+<span class="sd">        color(str): Color for the overlayed Healpix grid. Defaults to white.</span>
+<span class="sd">        svg_zoom(int): Initial zoom for projecting Healpix grid onto the screen.</span>
+<span class="sd">            The higher the zoom the better the resolution and accuracy.</span>
+<span class="sd">            Defaults to 5.</span>
+<span class="sd">        nside(int) : Healpix resolution given by nside parameters for the</span>
+<span class="sd">        input pixel, dafaults to 1024. It must be a power of 2, less than 2**30.</span>
+<span class="sd">        nest(bool): Pixelization schema, True: Nested Schema, False: Ring</span>
+<span class="sd">            Schema. Defaults to True.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">_view_name</span> <span class="o">=</span> <span class="n">Unicode</span><span class="p">(</span><span class="s1">&#39;LeafletHealpixLayerView&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">_model_name</span> <span class="o">=</span> <span class="n">Unicode</span><span class="p">(</span><span class="s1">&#39;LeafletHealpixLayerModel&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">_healpix_url</span> <span class="o">=</span> <span class="n">Unicode</span><span class="p">()</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">visible</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">color</span> <span class="o">=</span> <span class="n">Unicode</span><span class="p">(</span><span class="s1">&#39;white&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">o</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">svg_zoom</span> <span class="o">=</span> <span class="n">Int</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">o</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">nside</span> <span class="o">=</span> <span class="n">Int</span><span class="p">(</span><span class="mi">1024</span><span class="p">)</span>
+    <span class="n">nest</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+
+<div class="viewcode-block" id="HealpixLayer.__init__"><a class="viewcode-back" href="../../vizic.html#vizic.astroleaflet.HealpixLayer.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gridLayer</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            gridLayer: A gridLayer instance.</span>
+<span class="sd">            **kwargs: Arbitrary keyword arguments.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            Exception: If the gridLayer object doesn&#39;t have a</span>
+<span class="sd">                connected database.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">HealpixLayer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="c1"># Check for parameters regarding Healpix, i.e, nside and nest</span>
+        <span class="k">if</span> <span class="s1">&#39;nside&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">nside</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;nside&quot;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="s1">&#39;nest&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">nest</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;nest&quot;</span><span class="p">])</span>
+        <span class="c1"># &#39;_id&#39; field for this particular healpix grid data in Mongodb</span>
+        <span class="n">document_id</span> <span class="o">=</span> <span class="n">gridLayer</span><span class="o">.</span><span class="n">collection</span><span class="o">+</span><span class="s1">&#39;_&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nside</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;_&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nest</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">db</span> <span class="o">=</span> <span class="n">gridLayer</span><span class="o">.</span><span class="n">db</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Mongodb connection error! Check connection object!&#39;</span><span class="p">)</span>
+        <span class="c1"># print(self.collection)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="p">[</span><span class="s1">&#39;healpix&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">find</span><span class="p">({</span><span class="s1">&#39;_id&#39;</span><span class="p">:</span><span class="n">document_id</span><span class="p">})</span><span class="o">.</span><span class="n">count</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">inject_data</span><span class="p">(</span><span class="n">gridLayer</span><span class="p">,</span> <span class="n">document_id</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_server_url</span> <span class="o">=</span> <span class="n">gridLayer</span><span class="o">.</span><span class="n">_server_url</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_healpix_url</span> <span class="o">=</span> <span class="n">url_path_join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_server_url</span><span class="p">,</span> <span class="s1">&#39;/healpix/</span><span class="si">{}</span><span class="s1">.json&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">document_id</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="HealpixLayer.inject_data"><a class="viewcode-back" href="../../vizic.html#vizic.astroleaflet.HealpixLayer.inject_data">[docs]</a>    <span class="k">def</span> <span class="nf">inject_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gridLayer</span><span class="p">,</span> <span class="n">document_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Import computed Healpix grid into the database&quot;&quot;&quot;</span>
+        <span class="c1"># [xmin, xmax, ymin, ymax]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bbox</span> <span class="o">=</span> <span class="p">[</span><span class="n">gridLayer</span><span class="o">.</span><span class="n">_des_crs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">gridLayer</span><span class="o">.</span><span class="n">_des_crs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">gridLayer</span><span class="o">.</span><span class="n">y_range</span><span class="p">,</span> <span class="n">gridLayer</span><span class="o">.</span><span class="n">_des_crs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="n">gridLayer</span><span class="o">.</span><span class="n">x_range</span><span class="p">,</span> <span class="n">gridLayer</span><span class="o">.</span><span class="n">_des_crs</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+        <span class="n">all_v</span> <span class="o">=</span> <span class="n">get_vert_bbox</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bbox</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">bbox</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">bbox</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">bbox</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">nside</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nest</span><span class="p">)</span>
+        <span class="n">polys</span> <span class="o">=</span> <span class="p">[{</span><span class="s1">&#39;ra&#39;</span><span class="p">:</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span> <span class="s1">&#39;dec&#39;</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()}</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">all_v</span><span class="p">]</span>
+        <span class="c1"># inject data into mongodb</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="p">[</span><span class="s1">&#39;healpix&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">insert_one</span><span class="p">({</span><span class="s1">&#39;_id&#39;</span><span class="p">:</span><span class="n">document_id</span><span class="p">,</span> <span class="s1">&#39;data&#39;</span><span class="p">:</span><span class="n">polys</span><span class="p">})</span></div></div>
+
+
+<div class="viewcode-block" id="CirclesOverLay"><a class="viewcode-back" href="../../vizic.html#vizic.astroleaflet.CirclesOverLay">[docs]</a><span class="k">class</span> <span class="nc">CirclesOverLay</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Circles overlay class.</span>
+
+<span class="sd">    Overlay a group of circles using data provided in a pandas dataframe or a</span>
+<span class="sd">    document ID for stored data in the database.</span>
+
+<span class="sd">    Keyword Args:</span>
+<span class="sd">        color(str): Color for the overlayed circles. Defaults to purple.</span>
+<span class="sd">        svg_zoom(int): Initial zoom for projecting circles onto the screen.</span>
+<span class="sd">            The higher the zoom the better the resolution and accuracy.</span>
+<span class="sd">            Defaults to 5.</span>
+<span class="sd">        df: A pandas dataframe containing the positions for the circles to be</span>
+<span class="sd">        drawn. Raidus for these circles could also be specified here.</span>
+<span class="sd">        raidus(int): The raidus of the circles drawn measured in pixels.</span>
+<span class="sd">            Defaults to 50 pixels.</span>
+<span class="sd">        cols: A list indicating the position columns name. Defauts to</span>
+<span class="sd">            [``RA``, ``DEC``]. A third entry can be provided to indicate the</span>
+<span class="sd">            radius column.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">_view_name</span> <span class="o">=</span> <span class="n">Unicode</span><span class="p">(</span><span class="s1">&#39;LeafletCirclesLayerView&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">_model_name</span> <span class="o">=</span> <span class="n">Unicode</span><span class="p">(</span><span class="s1">&#39;LeafletCirclesLayerModel&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">circles_url</span> <span class="o">=</span> <span class="n">Unicode</span><span class="p">()</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">visible</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">color</span> <span class="o">=</span> <span class="n">Unicode</span><span class="p">(</span><span class="s1">&#39;purple&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">o</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">svg_zoom</span> <span class="o">=</span> <span class="n">Int</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">o</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">Instance</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">radius</span> <span class="o">=</span> <span class="n">Int</span><span class="p">(</span><span class="mi">50</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">o</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">cols</span> <span class="o">=</span> <span class="n">List</span><span class="p">([</span><span class="s1">&#39;RA&#39;</span><span class="p">,</span> <span class="s1">&#39;DEC&#39;</span><span class="p">])</span>
+
+<div class="viewcode-block" id="CirclesOverLay.__init__"><a class="viewcode-back" href="../../vizic.html#vizic.astroleaflet.CirclesOverLay.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gridLayer</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            gridLayer: A gridLayer instance.</span>
+<span class="sd">            name: The document ID for data stored in the database or a new</span>
+<span class="sd">                user-defined ID for new data.</span>
+<span class="sd">            **kwargs: Arbitrary keyword arguments.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">CirclesOverLay</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">db</span> <span class="o">=</span> <span class="n">gridLayer</span><span class="o">.</span><span class="n">db</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Mongodb connection error! Check connection object!&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">document_id</span> <span class="o">=</span> <span class="n">name</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="p">[</span><span class="s1">&#39;circles&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">find</span><span class="p">({</span><span class="s1">&#39;_id&#39;</span><span class="p">:</span><span class="n">name</span><span class="p">})</span><span class="o">.</span><span class="n">count</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Given overlay data id does not exist, a dataframe is required.&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">inject_data</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_server_url</span> <span class="o">=</span> <span class="n">gridLayer</span><span class="o">.</span><span class="n">_server_url</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">circles_url</span> <span class="o">=</span> <span class="n">url_path_join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_server_url</span><span class="p">,</span> <span class="s1">&#39;/circles/</span><span class="si">{}</span><span class="s1">.json&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="CirclesOverLay.inject_data"><a class="viewcode-back" href="../../vizic.html#vizic.astroleaflet.CirclesOverLay.inject_data">[docs]</a>    <span class="k">def</span> <span class="nf">inject_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">document_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Import data to the database&quot;&quot;&quot;</span>
+        <span class="n">dff</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">dff</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">dff</span><span class="o">.</span><span class="n">columns</span><span class="p">]</span>
+        <span class="n">cols</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span><span class="p">]</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">dff</span><span class="p">[</span><span class="n">cols</span><span class="p">]</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(</span><span class="n">orient</span><span class="o">=</span><span class="s1">&#39;records&#39;</span><span class="p">)</span>
+
+        <span class="n">coll</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="p">[</span><span class="s1">&#39;circles&#39;</span><span class="p">]</span>
+        <span class="n">coll</span><span class="o">.</span><span class="n">insert_one</span><span class="p">({</span><span class="s1">&#39;_id&#39;</span><span class="p">:</span><span class="n">document_id</span><span class="p">,</span> <span class="s1">&#39;data&#39;</span><span class="p">:</span><span class="n">data</span><span class="p">})</span></div></div>
+
+
+<div class="viewcode-block" id="MstLayer"><a class="viewcode-back" href="../../vizic.html#vizic.astroleaflet.MstLayer">[docs]</a><span class="k">class</span> <span class="nc">MstLayer</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Minimum spanning tree (MST) overlay class.</span>
+
+<span class="sd">    Layer class for MST computed using the catalog visualized by the base</span>
+<span class="sd">    tileLayer with added features to cut the tree by maximum edge length</span>
+<span class="sd">    and minimum branch size (the number edges in a branch).</span>
+
+<span class="sd">    Keyword Args:</span>
+<span class="sd">        color(str): Color for the overlayed MST. Defaults to ``#0459e2``.</span>
+<span class="sd">        svg_zoom(int): Initial zoom for projecting MST onto the screen.</span>
+<span class="sd">            The higher the zoom the better the resolution and accuracy.</span>
+<span class="sd">            Defaults to 5.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">_view_name</span> <span class="o">=</span> <span class="n">Unicode</span><span class="p">(</span><span class="s1">&#39;LeafletMstLayerView&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">_model_name</span> <span class="o">=</span> <span class="n">Unicode</span><span class="p">(</span><span class="s1">&#39;LeafletMstLayerModel&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">mst_url</span> <span class="o">=</span> <span class="n">Unicode</span><span class="p">()</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="c1"># cut_tree = Bool(False).tag(sync=True)</span>
+    <span class="n">max_len</span> <span class="o">=</span> <span class="n">Float</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">visible</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">color</span> <span class="o">=</span> <span class="n">Unicode</span><span class="p">(</span><span class="s1">&#39;#0459e2&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">o</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">svg_zoom</span> <span class="o">=</span> <span class="n">Int</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">o</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">line_idx</span> <span class="o">=</span> <span class="n">List</span><span class="p">()</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">_cut_count</span> <span class="o">=</span> <span class="n">Int</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<div class="viewcode-block" id="MstLayer.__init__"><a class="viewcode-back" href="../../vizic.html#vizic.astroleaflet.MstLayer.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gridLayer</span><span class="p">,</span> <span class="n">neighbors</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Note:</span>
+<span class="sd">            To speed the calculation, Vizic retains the index of non-zero</span>
+<span class="sd">            element in the MST sparse matrix.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            gridLayer: A gridLayer instance.</span>
+<span class="sd">            neighbors: Vizic uses ``kneighbors_graph`` from sklearn to compute</span>
+<span class="sd">                spanning trees for each set of points. The higher the number</span>
+<span class="sd">                of neighbors used, the higher the precision.</span>
+<span class="sd">            **kwargs: Arbitrary keyword arguments.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            Exception: If the gridLayer object doesn&#39;t have a connected</span>
+<span class="sd">                database.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">MstLayer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">db</span> <span class="o">=</span> <span class="n">gridLayer</span><span class="o">.</span><span class="n">db</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Mongodb connection error! Check connection object!&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">document_id</span> <span class="o">=</span> <span class="n">gridLayer</span><span class="o">.</span><span class="n">collection</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="p">[</span><span class="s1">&#39;mst&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">find</span><span class="p">({</span><span class="s1">&#39;_id&#39;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">document_id</span><span class="p">})</span><span class="o">.</span><span class="n">count</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">inject_data</span><span class="p">(</span><span class="n">neighbors</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">get_index</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_server_url</span> <span class="o">=</span> <span class="n">gridLayer</span><span class="o">.</span><span class="n">_server_url</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mst_url</span> <span class="o">=</span> <span class="n">url_path_join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_server_url</span><span class="p">,</span> <span class="s1">&#39;/mst/</span><span class="si">{}</span><span class="s1">.json&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">document_id</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="MstLayer.inject_data"><a class="viewcode-back" href="../../vizic.html#vizic.astroleaflet.MstLayer.inject_data">[docs]</a>    <span class="k">def</span> <span class="nf">inject_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">neighbors</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Calculate and import MST data into the database.&quot;&quot;&quot;</span>
+        <span class="n">coll</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">document_id</span><span class="p">]</span>
+        <span class="n">cur_ls</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">coll</span><span class="o">.</span><span class="n">find</span><span class="p">({</span><span class="s1">&#39;_id&#39;</span><span class="p">:{</span><span class="s1">&#39;$ne&#39;</span><span class="p">:</span><span class="s1">&#39;meta&#39;</span><span class="p">}},{</span><span class="s1">&#39;_id&#39;</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span><span class="s1">&#39;RA&#39;</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span><span class="s1">&#39;DEC&#39;</span><span class="p">:</span><span class="mi">1</span><span class="p">}))</span>
+        <span class="n">df_pos</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">cur_ls</span><span class="p">)</span>
+        <span class="n">m</span><span class="p">,</span> <span class="n">index</span> <span class="o">=</span> <span class="n">get_mst</span><span class="p">(</span><span class="n">df_pos</span><span class="p">,</span> <span class="n">neighbors</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">index</span>
+        <span class="n">mst_lines</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(</span><span class="n">orient</span><span class="o">=</span><span class="s1">&#39;records&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="p">[</span><span class="s1">&#39;mst&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">insert_one</span><span class="p">({</span><span class="s1">&#39;_id&#39;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">document_id</span><span class="p">,</span> <span class="s1">&#39;tree&#39;</span><span class="p">:</span><span class="n">mst_lines</span><span class="p">})</span></div>
+
+<div class="viewcode-block" id="MstLayer.get_index"><a class="viewcode-back" href="../../vizic.html#vizic.astroleaflet.MstLayer.get_index">[docs]</a>    <span class="k">def</span> <span class="nf">get_index</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Retrive the index of the saved MST matrix&quot;&quot;&quot;</span>
+        <span class="n">coll</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="p">[</span><span class="s1">&#39;mst&#39;</span><span class="p">]</span>
+        <span class="n">cur_ls</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">coll</span><span class="o">.</span><span class="n">find</span><span class="p">({</span><span class="s1">&#39;_id&#39;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">document_id</span><span class="p">}))</span>
+        <span class="c1"># lines_ls = cur_ls[&#39;tree&#39;]</span>
+        <span class="n">df_pos</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">cur_ls</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;tree&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">get_m_index</span><span class="p">(</span><span class="n">df_pos</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="MstLayer.cut"><a class="viewcode-back" href="../../vizic.html#vizic.astroleaflet.MstLayer.cut">[docs]</a>    <span class="k">def</span> <span class="nf">cut</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span> <span class="n">members</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Cut the MST.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            length(float): Maximum edge length.</span>
+<span class="sd">            members(int): The minimum number of edges in each saved branch.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">line_idx</span> <span class="o">=</span> <span class="n">cut_tree</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span> <span class="n">members</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_len</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">length</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cut_count</span> <span class="o">+=</span> <span class="mi">1</span></div>
+
+    <span class="k">def</span> <span class="nf">recover</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_len</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+<div class="viewcode-block" id="MstLayer.get_data"><a class="viewcode-back" href="../../vizic.html#vizic.astroleaflet.MstLayer.get_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Retrive the MST edges data from the database.&quot;&quot;&quot;</span>
+        <span class="n">coll</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="p">[</span><span class="s1">&#39;mst&#39;</span><span class="p">]</span>
+        <span class="n">cur_ls</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">coll</span><span class="o">.</span><span class="n">find</span><span class="p">({</span><span class="s1">&#39;_id&#39;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">document_id</span><span class="p">}))</span>
+        <span class="k">return</span> <span class="n">cur_ls</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;tree&#39;</span><span class="p">]</span></div></div>
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Weixiang Yu.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.4',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
