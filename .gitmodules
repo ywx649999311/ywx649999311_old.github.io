@@ -1,8 +1,8 @@
-[submodule "ywx649999311.github.io"]
-	path = ywx649999311.github.io
-	url = https://github.com/ywx649999311/ywx649999311.github.io
-	branch = master
-[submodule "public"]
-	path = public
-	url = https://github.com/ywx649999311/ywx649999311.github.io.git
-	branch = master
+# [submodule "ywx649999311.github.io"]
+# 	path = ywx649999311.github.io
+# 	url = https://github.com/ywx649999311/ywx649999311.github.io
+# 	branch = master
+# [submodule "public"]
+# 	path = public
+# 	url = https://github.com/ywx649999311/ywx649999311.github.io.git
+# 	branch = master
