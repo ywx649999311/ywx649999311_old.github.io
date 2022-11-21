@@ -1,0 +1,438 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>vizic.utils &mdash; Vizic 0.4 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="Vizic 0.4 documentation" href="../../index.html"/>
+        <link rel="up" title="Module code" href="../index.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> Vizic
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.4
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../vizic.html">Vizic API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../extensions.html">Extensions</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Vizic</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>vizic.utils</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for vizic.utils</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">healpy</span> <span class="k">as</span> <span class="nn">hp</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">scipy.sparse.csgraph</span> <span class="k">import</span> <span class="n">minimum_spanning_tree</span> <span class="k">as</span> <span class="n">mst</span>
+<span class="kn">from</span> <span class="nn">sklearn.neighbors</span> <span class="k">import</span> <span class="n">kneighbors_graph</span> <span class="k">as</span> <span class="n">kng</span>
+<span class="kn">from</span> <span class="nn">scipy.sparse</span> <span class="k">import</span> <span class="n">find</span>
+<span class="kn">from</span> <span class="nn">scipy.sparse.csgraph</span> <span class="k">import</span> <span class="n">connected_components</span> <span class="k">as</span> <span class="n">cp</span>
+<span class="kn">from</span> <span class="nn">scipy.sparse</span> <span class="k">import</span> <span class="n">csr_matrix</span>
+
+
+<div class="viewcode-block" id="get_mst"><a class="viewcode-back" href="../../vizic.html#vizic.utils.get_mst">[docs]</a><span class="k">def</span> <span class="nf">get_mst</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">neighbors</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Compute the Minimum Spanning Tree (MST) from postions.</span>
+
+<span class="sd">    This function takes a pandas dataframe of poistions and compute the</span>
+<span class="sd">    distances to k-neighbors for all poistions given, then find the MST using</span>
+<span class="sd">    ``scipy.sparse.csgraph``. Finally finds the non-zero elements in a</span>
+<span class="sd">    returned sparse matrix.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        df: A pandas dataframe all positions with longitude as ``RA`` and</span>
+<span class="sd">            latitute as ``DEC``.</span>
+<span class="sd">        neighbors(int): The number of neighbors used when computing tress.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A pandas dataframe for all edges in the MST and a tuple of arrays</span>
+<span class="sd">        storing the indexes and values of non-zero elements in the MST sparse</span>
+<span class="sd">        matrix.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[[</span><span class="s1">&#39;RA&#39;</span><span class="p">,</span> <span class="s1">&#39;DEC&#39;</span><span class="p">]]</span>
+    <span class="n">numA</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">as_matrix</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;RA&#39;</span><span class="p">,</span><span class="s1">&#39;DEC&#39;</span><span class="p">])</span>
+    <span class="n">G</span> <span class="o">=</span> <span class="n">kng</span><span class="p">(</span><span class="n">numA</span><span class="p">,</span><span class="n">n_neighbors</span><span class="o">=</span><span class="n">neighbors</span><span class="p">,</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;distance&#39;</span><span class="p">)</span>
+    <span class="n">T</span> <span class="o">=</span> <span class="n">mst</span><span class="p">(</span><span class="n">G</span><span class="p">)</span>
+    <span class="n">index</span> <span class="o">=</span> <span class="n">find</span><span class="p">(</span><span class="n">T</span><span class="p">)</span>
+    <span class="n">row_ls</span> <span class="o">=</span> <span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+    <span class="n">col_ls</span> <span class="o">=</span> <span class="n">index</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+    <span class="n">df1</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">ix</span><span class="p">[</span><span class="n">row_ls</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+    <span class="n">df2</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">ix</span><span class="p">[</span><span class="n">col_ls</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+    <span class="n">df1</span> <span class="o">=</span> <span class="n">df1</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;RA&#39;</span><span class="p">:</span><span class="s1">&#39;RA1&#39;</span><span class="p">,</span> <span class="s1">&#39;DEC&#39;</span><span class="p">:</span><span class="s1">&#39;DEC1&#39;</span><span class="p">,</span> <span class="s1">&#39;index&#39;</span><span class="p">:</span><span class="s1">&#39;index1&#39;</span><span class="p">})</span>
+    <span class="n">df2</span> <span class="o">=</span> <span class="n">df2</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;RA&#39;</span><span class="p">:</span><span class="s1">&#39;RA2&#39;</span><span class="p">,</span> <span class="s1">&#39;DEC&#39;</span><span class="p">:</span><span class="s1">&#39;DEC2&#39;</span><span class="p">,</span> <span class="s1">&#39;index&#39;</span><span class="p">:</span><span class="s1">&#39;index2&#39;</span><span class="p">})</span>
+    <span class="n">final</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">df1</span><span class="p">,</span><span class="n">df2</span><span class="p">],</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">final</span><span class="p">[</span><span class="s1">&#39;edges&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">index</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">index</span><span class="o">=</span><span class="n">final</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+    <span class="n">final</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># take index into columns for later filtering in JS</span>
+    <span class="n">final</span> <span class="o">=</span> <span class="n">final</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;index&#39;</span><span class="p">:</span><span class="s1">&#39;line_index&#39;</span><span class="p">})</span>
+    <span class="k">return</span> <span class="n">final</span><span class="p">,</span> <span class="n">index</span></div>
+
+
+<div class="viewcode-block" id="get_m_index"><a class="viewcode-back" href="../../vizic.html#vizic.utils.get_m_index">[docs]</a><span class="k">def</span> <span class="nf">get_m_index</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Find the index from a given dataframe of MST edges.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        df: A pandas dataframe of MST edges.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A tuple of arrays storing the indexes and values of non-zero elements</span>
+<span class="sd">        in the MST sparse matrix.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">node_num</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span>
+    <span class="n">index_mtx</span> <span class="o">=</span> <span class="n">csr_matrix</span><span class="p">((</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;edges&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;index1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;index2&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)),</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">node_num</span><span class="p">,</span> <span class="n">node_num</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">find</span><span class="p">(</span><span class="n">index_mtx</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="cut_tree"><a class="viewcode-back" href="../../vizic.html#vizic.utils.cut_tree">[docs]</a><span class="k">def</span> <span class="nf">cut_tree</span><span class="p">(</span><span class="n">mst_index</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span> <span class="n">member</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Find the index for saved edges after a cut.</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        At the frond-end all edges in a MST are stored in a JavaScript array</span>
+<span class="sd">        and this function only returns the indexes for wanted edges.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        mst_index: A tuple of arrays indicating the indexes and values for the</span>
+<span class="sd">            MST sparse matrix.</span>
+<span class="sd">        length(float): The maximum length for edges in a trimmed tree. All edges</span>
+<span class="sd">            above are cutted off.</span>
+<span class="sd">        member(int): Minimum number of edges required in a saved branch. All</span>
+<span class="sd">            branches having less members are removed in the final tree.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A list of integers representing the index for saved edges.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">index</span> <span class="o">=</span> <span class="n">mst_index</span>
+    <span class="n">node_num</span> <span class="o">=</span> <span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span>
+    <span class="n">lines</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;row&#39;</span><span class="p">:</span><span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;col&#39;</span><span class="p">:</span><span class="n">index</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;val&#39;</span><span class="p">:</span><span class="n">index</span><span class="p">[</span><span class="mi">2</span><span class="p">]})</span>
+
+    <span class="n">cutted</span> <span class="o">=</span> <span class="n">lines</span><span class="p">[</span><span class="n">lines</span><span class="o">.</span><span class="n">val</span> <span class="o">&lt;</span> <span class="n">length</span><span class="p">]</span>  <span class="c1"># get lines after cut</span>
+    <span class="c1"># make csr matrix for finding connected components</span>
+    <span class="n">ccm</span> <span class="o">=</span> <span class="n">csr_matrix</span><span class="p">((</span><span class="n">cutted</span><span class="p">[</span><span class="s1">&#39;val&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,(</span><span class="n">cutted</span><span class="p">[</span><span class="s1">&#39;row&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">cutted</span><span class="p">[</span><span class="s1">&#39;col&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)),</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">node_num</span><span class="p">,</span> <span class="n">node_num</span><span class="p">))</span>
+    <span class="n">labels</span> <span class="o">=</span> <span class="n">cp</span><span class="p">(</span><span class="n">ccm</span><span class="p">,</span> <span class="n">directed</span><span class="o">=</span><span class="kc">False</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># find connected components and get labels</span>
+
+    <span class="c1"># sort out labels with small group members</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span>
+    <span class="n">df_s</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;group&#39;</span><span class="p">)</span>  <span class="c1"># make label groups, make integer index one column and refer to node id</span>
+    <span class="n">gb</span> <span class="o">=</span> <span class="n">df_s</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;group&#39;</span><span class="p">)</span>  <span class="c1"># group by groups(labels)</span>
+    <span class="n">df_rt</span> <span class="o">=</span> <span class="n">gb</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>  <span class="c1"># ordered by group labels, value is the counts, this is actually a dataframe</span>
+    <span class="n">label_cnts</span> <span class="o">=</span> <span class="n">df_rt</span><span class="p">[</span><span class="s1">&#39;index&#39;</span><span class="p">]</span>  <span class="c1"># index is the column name</span>
+    <span class="n">label_cnts</span> <span class="o">=</span> <span class="n">label_cnts</span><span class="p">[</span><span class="n">label_cnts</span> <span class="o">&lt;</span> <span class="n">member</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># find groups with less than n+1 node,</span>
+    <span class="c1"># member is the provided min branch count</span>
+
+    <span class="n">rm_gps</span> <span class="o">=</span> <span class="n">label_cnts</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>  <span class="c1"># groups with labels discarded</span>
+    <span class="n">node_ls</span> <span class="o">=</span> <span class="n">df_s</span><span class="p">[</span><span class="n">df_s</span><span class="o">.</span><span class="n">group</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">rm_gps</span><span class="p">)][</span><span class="s1">&#39;index&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>  <span class="c1"># the list of nodes that will be discarded</span>
+    <span class="n">lines_rt</span> <span class="o">=</span> <span class="n">lines</span><span class="p">[(</span><span class="o">~</span><span class="n">lines</span><span class="o">.</span><span class="n">col</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">node_ls</span><span class="p">))]</span>  <span class="c1"># remove line pairs that include node in node_ls</span>
+    <span class="n">saved_index</span> <span class="o">=</span> <span class="n">lines_rt</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+
+    <span class="c1"># return the wanted lines in the form of index</span>
+    <span class="k">return</span> <span class="n">saved_index</span></div>
+
+
+<span class="c1"># Functions for Healpix</span>
+<div class="viewcode-block" id="get_vert"><a class="viewcode-back" href="../../vizic.html#vizic.utils.get_vert">[docs]</a><span class="k">def</span> <span class="nf">get_vert</span><span class="p">(</span><span class="n">pixel</span><span class="p">,</span> <span class="n">nside</span><span class="p">,</span> <span class="n">nest</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Get the coordinates for the vertices for a single Healpix index for a given</span>
+<span class="sd">    resolution (nside) and schema (nest)</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        * All arguments are required</span>
+<span class="sd">        pixel(int): Healpix index</span>
+<span class="sd">        nside(int) : Healpix resolution given by nside parameters for the input pixel</span>
+<span class="sd">        nest(bool): Pixelization schema, True: Nested Schema, False: Ring Schema</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        Two lists with the RA and DEC positions for the vertices for the given pixel.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Get vertices in radian coordinates for a given pixel</span>
+    <span class="n">vertices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">hp</span><span class="o">.</span><span class="n">vec2ang</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">hp</span><span class="o">.</span><span class="n">boundaries</span><span class="p">(</span><span class="n">nside</span><span class="p">,</span><span class="n">pixel</span><span class="p">,</span><span class="n">nest</span><span class="o">=</span><span class="n">nest</span><span class="p">))))</span>
+    <span class="c1"># To degrees</span>
+    <span class="n">vertices</span> <span class="o">=</span> <span class="n">vertices</span><span class="o">*</span><span class="mf">180.</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+    <span class="n">diff</span> <span class="o">=</span> <span class="n">vertices</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">vertices</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># RA = 0</span>
+    <span class="n">diff</span><span class="p">[</span><span class="n">diff</span> <span class="o">&gt;</span> <span class="mi">180</span><span class="p">]</span> <span class="o">-=</span> <span class="mi">360</span>
+    <span class="n">diff</span><span class="p">[</span><span class="n">diff</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mi">180</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">360</span>
+    <span class="n">ra_vert</span> <span class="o">=</span> <span class="n">vertices</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">diff</span>
+    <span class="n">ra_vert</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ra_vert</span><span class="p">,</span><span class="n">ra_vert</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">dec_vert</span> <span class="o">=</span> <span class="mf">90.0</span> <span class="o">-</span> <span class="n">vertices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">dec_vert</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dec_vert</span><span class="p">,</span><span class="n">dec_vert</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">ra_vert</span><span class="p">,</span><span class="n">dec_vert</span></div>
+
+
+<div class="viewcode-block" id="is_inside_bbox"><a class="viewcode-back" href="../../vizic.html#vizic.utils.is_inside_bbox">[docs]</a><span class="k">def</span> <span class="nf">is_inside_bbox</span><span class="p">(</span><span class="n">ra</span><span class="p">,</span><span class="n">dec</span><span class="p">,</span><span class="n">llra</span><span class="p">,</span><span class="n">lldec</span><span class="p">,</span><span class="n">urra</span><span class="p">,</span><span class="n">urdec</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Find whether a point is inside a bounding box.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        ra(float): Right ascension of the query point.</span>
+<span class="sd">        dec(float): Declination of the query point.</span>
+<span class="sd">        llra(float): Lower left RA for the bounding box.</span>
+<span class="sd">        lldec(float): Lower left DEC for the bounding box.</span>
+<span class="sd">        urra(float): Upper right RA for the bounding box.</span>
+<span class="sd">        urdec(float): Upper right DEC for the bounding box.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A Bool whether the point is inside the bounding box.</span>
+
+<span class="sd">    TODO: Use ray tracing for any polygon shape</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">ra</span> <span class="o">&lt;=</span> <span class="n">urra</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">ra</span> <span class="o">&gt;=</span> <span class="n">llra</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">dec</span> <span class="o">&lt;=</span> <span class="n">urdec</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">dec</span> <span class="o">&gt;=</span> <span class="n">lldec</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="get_vert_bbox"><a class="viewcode-back" href="../../vizic.html#vizic.utils.get_vert_bbox">[docs]</a><span class="k">def</span> <span class="nf">get_vert_bbox</span><span class="p">(</span><span class="n">llra</span><span class="p">,</span><span class="n">lldec</span><span class="p">,</span><span class="n">urra</span><span class="p">,</span><span class="n">urdec</span><span class="p">,</span><span class="n">nside</span><span class="p">,</span><span class="n">nest</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Get a list of the vertices for all Healpix pixels inside a given bounding</span>
+<span class="sd">    box, resolution and pixelization schema.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        llra(float): Lower left RA for the bounding box.</span>
+<span class="sd">        lldec(float): Lower left DEC for the bounding box.</span>
+<span class="sd">        urra(float): Upper right RA for the bounding box.</span>
+<span class="sd">        urdec(float): Upper right DEC for the bounding box.</span>
+<span class="sd">        nside(int) : Healpix resolution given by nside.</span>
+<span class="sd">        nest(bool): Pixelization schema, True: Nested Schema, False: Ring Schema</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A list with the vertices for all pixels inside the bounding box.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Find central point for the bbox</span>
+    <span class="n">mid_ra</span> <span class="o">=</span> <span class="p">(</span><span class="n">urra</span><span class="o">+</span><span class="n">llra</span><span class="p">)</span><span class="o">/</span><span class="mf">2.</span>
+    <span class="n">mid_dec</span> <span class="o">=</span> <span class="p">(</span><span class="n">urdec</span> <span class="o">+</span> <span class="n">lldec</span><span class="p">)</span><span class="o">/</span><span class="mf">2.</span>
+    <span class="c1"># Convert to radians</span>
+    <span class="n">phi</span> <span class="o">=</span> <span class="n">mid_ra</span><span class="o">/</span><span class="mf">180.</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+    <span class="n">th</span> <span class="o">=</span> <span class="p">(</span><span class="mf">90.</span><span class="o">-</span><span class="n">mid_dec</span><span class="p">)</span><span class="o">/</span><span class="mf">180.</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+    <span class="n">pix</span> <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">ang2pix</span><span class="p">(</span><span class="n">nside</span><span class="p">,</span><span class="n">th</span><span class="p">,</span><span class="n">phi</span><span class="p">,</span><span class="n">nest</span><span class="p">)</span>  <span class="c1"># Pixel at center</span>
+    <span class="n">neig</span> <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">get_all_neighbours</span><span class="p">(</span><span class="n">nside</span><span class="p">,</span><span class="n">pix</span><span class="p">,</span><span class="kc">None</span><span class="p">,</span><span class="n">nest</span><span class="p">)</span>  <span class="c1"># Get initial 8 neighbors</span>
+    <span class="c1"># Create a set</span>
+    <span class="n">allp</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">neig</span><span class="p">)</span>
+    <span class="n">checked_big</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="n">checked_all</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="n">k</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="c1"># Find all pixels inside bounding box by looking at all the neighbors&#39;</span>
+    <span class="c1"># neighbors recursively using a set to speed up the process.</span>
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="mi">10000</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;Did not converge, increase k limit&#39;</span><span class="p">)</span>
+        <span class="c1"># Create a copy of the intial set of neighbors</span>
+        <span class="n">temp</span> <span class="o">=</span> <span class="n">allp</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">temp</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span><span class="n">checked_big</span><span class="p">):</span>
+            <span class="n">ntemp</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">hp</span><span class="o">.</span><span class="n">get_all_neighbours</span><span class="p">(</span><span class="n">nside</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="kc">None</span><span class="p">,</span><span class="n">nest</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">ntemp</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span><span class="n">checked_all</span><span class="p">):</span>
+                <span class="n">th2</span><span class="p">,</span><span class="n">phi2</span> <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">pix2ang</span><span class="p">(</span><span class="n">nside</span><span class="p">,</span><span class="n">j</span><span class="p">,</span><span class="n">nest</span><span class="p">)</span>
+                <span class="c1"># Check if given neighbor is inside the bbox</span>
+                <span class="k">if</span> <span class="n">is_inside_bbox</span><span class="p">(</span><span class="n">phi2</span><span class="o">*</span><span class="mf">180.</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span><span class="mi">90</span><span class="o">-</span><span class="n">th2</span><span class="o">*</span><span class="mf">180.</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span><span class="n">llra</span><span class="p">,</span><span class="n">lldec</span><span class="p">,</span><span class="n">urra</span><span class="p">,</span><span class="n">urdec</span><span class="p">):</span>
+                    <span class="n">temp</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
+            <span class="c1"># Update set to keep track of checked pixels</span>
+            <span class="n">checked_all</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">ntemp</span><span class="p">)</span>
+            <span class="n">checked_big</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">temp</span> <span class="o">==</span> <span class="n">allp</span><span class="p">:</span>
+            <span class="k">break</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">allp</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">temp</span><span class="p">)</span>
+            <span class="n">k</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="n">all_verts</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="c1"># Get vertices for pixels inside bounding box</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">allp</span><span class="p">:</span>
+        <span class="n">all_verts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">get_vert</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">nside</span><span class="p">,</span><span class="n">nest</span><span class="p">))</span>
+    <span class="c1"># Return complete list</span>
+    <span class="k">return</span> <span class="n">all_verts</span></div>
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Weixiang Yu.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.4',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

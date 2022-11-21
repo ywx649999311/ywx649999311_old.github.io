@@ -1,0 +1,465 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>vizic.mongo_ext.db_connect &mdash; Vizic 0.4 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../../genindex.html"/>
+        <link rel="search" title="Search" href="../../../search.html"/>
+    <link rel="top" title="Vizic 0.4 documentation" href="../../../index.html"/>
+        <link rel="up" title="Module code" href="../../index.html"/> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> Vizic
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.4
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../vizic.html">Vizic API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../extensions.html">Extensions</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Vizic</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>vizic.mongo_ext.db_connect</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for vizic.mongo_ext.db_connect</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">motor</span>
+<span class="kn">from</span> <span class="nn">tornado</span> <span class="k">import</span> <span class="n">gen</span>
+<span class="kn">import</span> <span class="nn">concurrent.futures</span> <span class="k">as</span> <span class="nn">cfs</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">from</span> <span class="nn">pymongo</span> <span class="k">import</span> <span class="n">MongoClient</span>
+<span class="kn">from</span> <span class="nn">bson.json_util</span> <span class="k">import</span> <span class="n">dumps</span>
+<span class="c1"># executor = cfs.ThreadPoolExecutor(max_workers=20)</span>
+
+
+<div class="viewcode-block" id="MongoConnect"><a class="viewcode-back" href="../../../extensions.html#vizic.mongo_ext.db_connect.MongoConnect">[docs]</a><span class="k">class</span> <span class="nc">MongoConnect</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;MongoDB utility wrapper.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        range_dict(dict): Geographical coverage, represented as the value</span>
+<span class="sd">            ranges in ``RA`` and ``DEC``, for catalog collections displayed</span>
+<span class="sd">            in the notebooks.</span>
+<span class="sd">        zoom_dict(dict): Maximum zooms for catalog collections displayed in</span>
+<span class="sd">            Jupyter notebooks.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">range_dict</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">zoom_dict</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">meta_dict</span> <span class="o">=</span> <span class="p">{}</span>
+
+<div class="viewcode-block" id="MongoConnect.__init__"><a class="viewcode-back" href="../../../extensions.html#vizic.mongo_ext.db_connect.MongoConnect.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">db</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initiate an asynchronous client and a static client.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            host(str): MongoDB host name or address.</span>
+<span class="sd">            port(int): The port number that MongoDB listens to.</span>
+<span class="sd">            db(str): MongoDB database name for storing and retriving data.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span> <span class="o">=</span> <span class="n">motor</span><span class="o">.</span><span class="n">motor_tornado</span><span class="o">.</span><span class="n">MotorClient</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="p">[</span><span class="n">db</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stat_client</span> <span class="o">=</span> <span class="n">MongoClient</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stat_db</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat_client</span><span class="p">[</span><span class="n">db</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="MongoConnect.close"><a class="viewcode-back" href="../../../extensions.html#vizic.mongo_ext.db_connect.MongoConnect.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Close existing clients.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stat_client</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="MongoConnect.getTileData"><a class="viewcode-back" href="../../../extensions.html#vizic.mongo_ext.db_connect.MongoConnect.getTileData">[docs]</a>    <span class="nd">@gen</span><span class="o">.</span><span class="n">coroutine</span>
+    <span class="k">def</span> <span class="nf">getTileData</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coll</span><span class="p">,</span> <span class="n">xc</span><span class="p">,</span> <span class="n">yc</span><span class="p">,</span> <span class="n">zoom</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Query the database for catalog in a particular tile.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            coll(str): A user-defined or automatically generated MongoDB</span>
+<span class="sd">                collection name for a specific catalog.</span>
+<span class="sd">            xc(int): x-coordinate the required tile.</span>
+<span class="sd">            yc(int): y-coordinate the required tile.</span>
+<span class="sd">            zoom(int): Zoom level for the required tile.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getCoordRange</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">xc</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">yc</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">zoom</span><span class="p">),</span> <span class="n">coll</span><span class="p">)</span>
+        <span class="n">minR</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getMinRadius</span><span class="p">(</span><span class="n">zoom</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">range_dict</span><span class="p">[</span><span class="n">coll</span><span class="p">])</span>
+        <span class="n">cursor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="p">[</span><span class="n">coll</span><span class="p">]</span><span class="o">.</span><span class="n">find</span><span class="p">({</span><span class="s1">&#39;$and&#39;</span><span class="p">:[</span>
+            <span class="p">{</span>
+                <span class="s1">&#39;loc&#39;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s1">&#39;$geoWithin&#39;</span><span class="p">:{</span>
+                        <span class="s1">&#39;$box&#39;</span><span class="p">:</span> <span class="p">[</span>
+                            <span class="p">[</span><span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">result</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span>
+                            <span class="p">[</span><span class="n">result</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="n">result</span><span class="p">[</span><span class="mi">3</span><span class="p">]]</span>
+                        <span class="p">]</span>
+                    <span class="p">}</span>
+                <span class="p">}</span>
+            <span class="p">},</span>
+            <span class="p">{</span><span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;$gte&#39;</span><span class="p">:</span> <span class="n">minR</span><span class="o">*</span><span class="mf">0.3</span><span class="p">}}</span>
+        <span class="p">]},</span>
+            <span class="p">{</span><span class="s1">&#39;_id&#39;</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;loc&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">}</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">cursor</span></div>
+
+    <span class="c1"># remeber to exclude the meta document</span>
+<div class="viewcode-block" id="MongoConnect.getVoronoi"><a class="viewcode-back" href="../../../extensions.html#vizic.mongo_ext.db_connect.MongoConnect.getVoronoi">[docs]</a>    <span class="nd">@gen</span><span class="o">.</span><span class="n">coroutine</span>
+    <span class="k">def</span> <span class="nf">getVoronoi</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">collection</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Retriev the entire catalog.</span>
+
+<span class="sd">        The retured catalog will be used to calculate Voronoi diagram at</span>
+<span class="sd">        the front-end.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            collection(str): Collection name for the required catalog.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A cursor object with the required data.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">coll</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="p">[</span><span class="n">collection</span><span class="p">]</span>
+        <span class="n">cursor</span> <span class="o">=</span> <span class="n">coll</span><span class="o">.</span><span class="n">find</span><span class="p">({</span><span class="s1">&#39;_id&#39;</span><span class="p">:{</span><span class="s1">&#39;$ne&#39;</span><span class="p">:</span><span class="s1">&#39;meta&#39;</span><span class="p">}},</span> <span class="p">{</span>
+            <span class="s1">&#39;_id&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s1">&#39;RA&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="s1">&#39;DEC&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="p">})</span>
+        <span class="k">return</span> <span class="n">cursor</span></div>
+
+<div class="viewcode-block" id="MongoConnect.getCoordRange"><a class="viewcode-back" href="../../../extensions.html#vizic.mongo_ext.db_connect.MongoConnect.getCoordRange">[docs]</a>    <span class="k">def</span> <span class="nf">getCoordRange</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xc</span><span class="p">,</span> <span class="n">yc</span><span class="p">,</span> <span class="n">zoom</span><span class="p">,</span> <span class="n">collection</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Determine the projection of a tile on the maximum zoom level.</span>
+
+<span class="sd">        For tiles at lower (smaller) zoom levels, this function returns tile</span>
+<span class="sd">        coordinates for the set of tiles that cover the same area as the</span>
+<span class="sd">        provided one at the maximum zoom level.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            xc(int): x-coordinate of the required tile.</span>
+<span class="sd">            yc(int): y-coordinate of the required tile.</span>
+<span class="sd">            zoom(int): Zoom level of the required tile.</span>
+<span class="sd">            collection(str): The name of collection storing the requested catalog.</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            A tuple representing the smallest and largest coordinate in both</span>
+<span class="sd">            x and y direction.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># read map range info from collection</span>
+        <span class="n">meta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">meta_dict</span><span class="p">[</span><span class="n">collection</span><span class="p">]</span>
+        <span class="n">x_range</span> <span class="o">=</span> <span class="n">meta</span><span class="p">[</span><span class="s1">&#39;xRange&#39;</span><span class="p">]</span>
+        <span class="n">y_range</span> <span class="o">=</span> <span class="n">meta</span><span class="p">[</span><span class="s1">&#39;yRange&#39;</span><span class="p">]</span>
+
+        <span class="n">total</span> <span class="o">=</span> <span class="mi">2</span><span class="o">**</span><span class="p">(</span><span class="n">zoom</span><span class="p">)</span>
+        <span class="n">xMin</span> <span class="o">=</span> <span class="n">x_range</span><span class="o">*</span><span class="n">xc</span><span class="o">/</span><span class="n">total</span><span class="o">+</span><span class="n">meta</span><span class="p">[</span><span class="s1">&#39;adjust&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">xMax</span> <span class="o">=</span> <span class="n">x_range</span><span class="o">*</span><span class="p">(</span><span class="n">xc</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="n">total</span><span class="o">+</span><span class="n">meta</span><span class="p">[</span><span class="s1">&#39;adjust&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">yMax</span> <span class="o">=</span> <span class="n">meta</span><span class="p">[</span><span class="s1">&#39;adjust&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">y_range</span><span class="o">*</span><span class="n">yc</span><span class="o">/</span><span class="n">total</span>
+        <span class="n">yMin</span> <span class="o">=</span> <span class="n">meta</span><span class="p">[</span><span class="s1">&#39;adjust&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">y_range</span><span class="o">*</span><span class="p">(</span><span class="n">yc</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="n">total</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">xMin</span><span class="p">,</span> <span class="n">yMin</span><span class="p">,</span> <span class="n">xMax</span><span class="p">,</span> <span class="n">yMax</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="MongoConnect.getMinRadius"><a class="viewcode-back" href="../../../extensions.html#vizic.mongo_ext.db_connect.MongoConnect.getMinRadius">[docs]</a>    <span class="k">def</span> <span class="nf">getMinRadius</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">zoom</span><span class="p">,</span> <span class="n">mapSizeV</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns the length scale of a one pixel.</span>
+
+<span class="sd">        Converting from pixel to degree, with provided projecting zoom level</span>
+<span class="sd">        and the size of the map measure in degree.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            zoom(int): The projected zoom level.</span>
+<span class="sd">            mapSizeV(float): The size of the map in vertial direction.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            float: A length correspoding to one pixel given the zoom level</span>
+<span class="sd">                and map szie.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">mapSizeV</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="mi">256</span><span class="o">*</span><span class="p">(</span><span class="mi">2</span><span class="o">**</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">zoom</span><span class="p">))))</span></div>
+
+<div class="viewcode-block" id="MongoConnect.getMst"><a class="viewcode-back" href="../../../extensions.html#vizic.mongo_ext.db_connect.MongoConnect.getMst">[docs]</a>    <span class="nd">@gen</span><span class="o">.</span><span class="n">coroutine</span>
+    <span class="k">def</span> <span class="nf">getMst</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coll</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Retrive previously calcuated minimum spanning tree (MST).</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            coll(str): Associated catalog collection name for the</span>
+<span class="sd">                requested MST.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A cursor object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cusor_m</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="p">[</span><span class="s1">&#39;mst&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">find</span><span class="p">({</span><span class="s1">&#39;_id&#39;</span><span class="p">:</span> <span class="n">coll</span><span class="p">},</span> <span class="p">{</span><span class="s1">&#39;_id&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;tree&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">})</span>
+        <span class="k">return</span> <span class="n">cusor_m</span></div>
+
+<div class="viewcode-block" id="MongoConnect.getHealpix"><a class="viewcode-back" href="../../../extensions.html#vizic.mongo_ext.db_connect.MongoConnect.getHealpix">[docs]</a>    <span class="nd">@gen</span><span class="o">.</span><span class="n">coroutine</span>
+    <span class="k">def</span> <span class="nf">getHealpix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coll</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Retrive previously calcuated Healpix grid.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            coll(str): Associated catalog collection name for the</span>
+<span class="sd">                requested Healpix grid.</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            A cursor object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cursor_h</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="p">[</span><span class="s1">&#39;healpix&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">find</span><span class="p">({</span><span class="s1">&#39;_id&#39;</span><span class="p">:</span><span class="n">coll</span><span class="p">},</span> <span class="p">{</span><span class="s1">&#39;_id&#39;</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;data&#39;</span><span class="p">:</span><span class="mi">1</span><span class="p">})</span>
+        <span class="k">return</span> <span class="n">cursor_h</span></div>
+
+<div class="viewcode-block" id="MongoConnect.getCircles"><a class="viewcode-back" href="../../../extensions.html#vizic.mongo_ext.db_connect.MongoConnect.getCircles">[docs]</a>    <span class="nd">@gen</span><span class="o">.</span><span class="n">coroutine</span>
+    <span class="k">def</span> <span class="nf">getCircles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coll</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Retrive previously imported circles layer data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            coll(str): Associated catalog collection name for the</span>
+<span class="sd">                requested circles layer.</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            A cursor object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cursor_c</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="p">[</span><span class="s1">&#39;circles&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">find</span><span class="p">({</span><span class="s1">&#39;_id&#39;</span><span class="p">:</span><span class="n">coll</span><span class="p">},</span> <span class="p">{</span><span class="s1">&#39;_id&#39;</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;data&#39;</span><span class="p">:</span><span class="mi">1</span><span class="p">})</span>
+        <span class="k">return</span> <span class="n">cursor_c</span></div>
+
+<div class="viewcode-block" id="MongoConnect.getOjbectByPos"><a class="viewcode-back" href="../../../extensions.html#vizic.mongo_ext.db_connect.MongoConnect.getOjbectByPos">[docs]</a>    <span class="k">def</span> <span class="nf">getOjbectByPos</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coll</span><span class="p">,</span> <span class="n">ra</span><span class="p">,</span> <span class="n">dec</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Query the data for a particular object.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            coll(str): The collection to search for object.</span>
+<span class="sd">            ra(float): ``RA`` for the requested object.</span>
+<span class="sd">            dec(float): ``DEC`` for the requested object.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The data for the requested object stored in a dictionary.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># inputs from tornado are strings, need to convert</span>
+        <span class="n">ra</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">ra</span><span class="p">)</span>
+        <span class="n">dec</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">dec</span><span class="p">)</span>
+        <span class="n">pop_cursor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat_db</span><span class="p">[</span><span class="n">coll</span><span class="p">]</span><span class="o">.</span><span class="n">find</span><span class="p">({</span>
+            <span class="s1">&#39;$and&#39;</span><span class="p">:[{</span><span class="s1">&#39;RA&#39;</span><span class="p">:</span><span class="n">ra</span><span class="p">},{</span><span class="s1">&#39;DEC&#39;</span><span class="p">:</span><span class="n">dec</span><span class="p">}]},</span>
+            <span class="p">{</span><span class="s1">&#39;_id&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;loc&#39;</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;theta&#39;</span><span class="p">:</span><span class="mi">0</span><span class="p">}</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">dumps</span><span class="p">(</span><span class="n">pop_cursor</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="MongoConnect.getRectSelection"><a class="viewcode-back" href="../../../extensions.html#vizic.mongo_ext.db_connect.MongoConnect.getRectSelection">[docs]</a>    <span class="k">def</span> <span class="nf">getRectSelection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coll</span><span class="p">,</span> <span class="n">swLng</span><span class="p">,</span> <span class="n">swLat</span><span class="p">,</span> <span class="n">neLng</span><span class="p">,</span> <span class="n">neLat</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Query data requested using selction tool.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            coll(str): The collection to search for data.</span>
+<span class="sd">            swLng(float): The longitude of the southwest corner on the</span>
+<span class="sd">                selection bound.</span>
+<span class="sd">            swLat(float): The latitute of the southwest corner on the</span>
+<span class="sd">                selection bound.</span>
+<span class="sd">            neLng(float): The longitude of the northeast corner on the</span>
+<span class="sd">                selection bound.</span>
+<span class="sd">            neLat(float): The latitute of the northeast corner on the</span>
+<span class="sd">                selection bound.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A list of dictionary for the returned catalog.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">swLat</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">swLat</span><span class="p">)</span>
+        <span class="n">swLng</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">swLng</span><span class="p">)</span>
+        <span class="n">neLat</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">neLat</span><span class="p">)</span>
+        <span class="n">neLng</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">neLng</span><span class="p">)</span>
+        <span class="n">minR</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getMinRadius</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">zoom_dict</span><span class="p">[</span><span class="n">coll</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">range_dict</span><span class="p">[</span><span class="n">coll</span><span class="p">])</span>
+        <span class="n">cursor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat_db</span><span class="p">[</span><span class="n">coll</span><span class="p">]</span><span class="o">.</span><span class="n">find</span><span class="p">({</span><span class="s1">&#39;$and&#39;</span><span class="p">:[</span>
+            <span class="p">{</span>
+                <span class="s1">&#39;loc&#39;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s1">&#39;$geoWithin&#39;</span><span class="p">:{</span>
+                        <span class="s1">&#39;$box&#39;</span><span class="p">:</span> <span class="p">[</span>
+                            <span class="p">[</span><span class="n">swLng</span><span class="p">,</span><span class="n">swLat</span><span class="p">],</span>
+                            <span class="p">[</span><span class="n">neLng</span><span class="p">,</span><span class="n">neLat</span><span class="p">]</span>
+                        <span class="p">]</span>
+                    <span class="p">}</span>
+                <span class="p">}</span>
+            <span class="p">},</span>
+            <span class="p">{</span><span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;$gte&#39;</span><span class="p">:</span> <span class="n">minR</span><span class="o">*</span><span class="mf">0.3</span><span class="p">}}</span>
+        <span class="p">]},</span>
+            <span class="p">{</span><span class="s1">&#39;_id&#39;</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;loc&#39;</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;theta&#39;</span><span class="p">:</span><span class="mi">0</span><span class="p">}</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">cursor</span><span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Weixiang Yu.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../',
+            VERSION:'0.4',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

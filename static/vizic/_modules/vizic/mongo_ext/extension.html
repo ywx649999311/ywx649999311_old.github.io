@@ -1,0 +1,444 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>vizic.mongo_ext.extension &mdash; Vizic 0.4 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../../genindex.html"/>
+        <link rel="search" title="Search" href="../../../search.html"/>
+    <link rel="top" title="Vizic 0.4 documentation" href="../../../index.html"/>
+        <link rel="up" title="Module code" href="../../index.html"/> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> Vizic
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.4
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../vizic.html">Vizic API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../extensions.html">Extensions</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Vizic</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>vizic.mongo_ext.extension</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for vizic.mongo_ext.extension</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">notebook.utils</span> <span class="k">import</span> <span class="n">url_path_join</span>
+<span class="kn">from</span> <span class="nn">notebook.base.handlers</span> <span class="k">import</span> <span class="n">IPythonHandler</span>
+<span class="c1"># from . import db_util as du</span>
+<span class="kn">from</span> <span class="nn">.db_connect</span> <span class="k">import</span> <span class="n">MongoConnect</span>
+<span class="kn">from</span> <span class="nn">tornado</span> <span class="k">import</span> <span class="n">gen</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">tornado.web</span>
+
+<span class="n">connection</span> <span class="o">=</span> <span class="kc">None</span>
+
+
+<div class="viewcode-block" id="tileHandler"><a class="viewcode-back" href="../../../extensions.html#vizic.mongo_ext.extension.tileHandler">[docs]</a><span class="k">class</span> <span class="nc">tileHandler</span><span class="p">(</span><span class="n">IPythonHandler</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Handler for tiled catalogs requests.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="tileHandler.get"><a class="viewcode-back" href="../../../extensions.html#vizic.mongo_ext.extension.tileHandler.get">[docs]</a>    <span class="nd">@gen</span><span class="o">.</span><span class="n">coroutine</span>
+    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coll</span><span class="p">,</span> <span class="n">zoom</span><span class="p">,</span> <span class="n">xc</span><span class="p">,</span> <span class="n">yc</span><span class="p">):</span>
+        <span class="k">global</span> <span class="n">connection</span>
+        <span class="k">if</span> <span class="n">connection</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_status</span><span class="p">(</span><span class="mi">403</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">({</span><span class="s1">&#39;msg&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">})</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">tile_gen</span> <span class="o">=</span> <span class="k">yield</span> <span class="n">connection</span><span class="o">.</span><span class="n">getTileData</span><span class="p">(</span><span class="n">coll</span><span class="p">,</span> <span class="n">xc</span><span class="p">,</span> <span class="n">yc</span><span class="p">,</span> <span class="n">zoom</span><span class="p">)</span>
+            <span class="n">tile_list</span> <span class="o">=</span> <span class="k">yield</span> <span class="n">tile_gen</span><span class="o">.</span><span class="n">to_list</span><span class="p">(</span><span class="n">length</span><span class="o">=</span><span class="mi">100000000</span><span class="p">)</span>
+            <span class="n">tile_json</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">tile_list</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_status</span><span class="p">(</span><span class="mi">200</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_header</span><span class="p">(</span><span class="s1">&#39;Content-Type&#39;</span><span class="p">,</span> <span class="s1">&#39;application/json&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">tile_json</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="dbHandler"><a class="viewcode-back" href="../../../extensions.html#vizic.mongo_ext.extension.dbHandler">[docs]</a><span class="k">class</span> <span class="nc">dbHandler</span><span class="p">(</span><span class="n">IPythonHandler</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Handler for request on database change.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="dbHandler.check_xsrf_cookie"><a class="viewcode-back" href="../../../extensions.html#vizic.mongo_ext.extension.dbHandler.check_xsrf_cookie">[docs]</a>    <span class="k">def</span> <span class="nf">check_xsrf_cookie</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="dbHandler.post"><a class="viewcode-back" href="../../../extensions.html#vizic.mongo_ext.extension.dbHandler.post">[docs]</a>    <span class="nd">@tornado</span><span class="o">.</span><span class="n">web</span><span class="o">.</span><span class="n">asynchronous</span>
+    <span class="k">def</span> <span class="nf">post</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">arguments</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_argument</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">arguments</span><span class="p">}</span>
+        <span class="n">host</span> <span class="o">=</span> <span class="n">arguments</span><span class="p">[</span><span class="s1">&#39;host&#39;</span><span class="p">]</span>
+        <span class="n">port</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">arguments</span><span class="p">[</span><span class="s1">&#39;port&#39;</span><span class="p">])</span>
+        <span class="n">db</span> <span class="o">=</span> <span class="n">arguments</span><span class="p">[</span><span class="s1">&#39;db&#39;</span><span class="p">]</span>
+        <span class="k">global</span> <span class="n">connection</span>
+
+        <span class="k">if</span> <span class="n">connection</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">connection</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">connection</span> <span class="o">=</span> <span class="n">MongoConnect</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">db</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_status</span><span class="p">(</span><span class="mi">403</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">({</span><span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span> <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="s1">&#39;check connection info&#39;</span><span class="p">})</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_status</span><span class="p">(</span><span class="mi">200</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">({</span><span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;ok&#39;</span><span class="p">})</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">finish</span><span class="p">()</span></div></div>
+
+
+<div class="viewcode-block" id="rangeHandler"><a class="viewcode-back" href="../../../extensions.html#vizic.mongo_ext.extension.rangeHandler">[docs]</a><span class="k">class</span> <span class="nc">rangeHandler</span><span class="p">(</span><span class="n">IPythonHandler</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Handler for updates on catalog metadata.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="rangeHandler.check_xsrf_cookie"><a class="viewcode-back" href="../../../extensions.html#vizic.mongo_ext.extension.rangeHandler.check_xsrf_cookie">[docs]</a>    <span class="k">def</span> <span class="nf">check_xsrf_cookie</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="rangeHandler.post"><a class="viewcode-back" href="../../../extensions.html#vizic.mongo_ext.extension.rangeHandler.post">[docs]</a>    <span class="k">def</span> <span class="nf">post</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">global</span> <span class="n">connection</span>
+        <span class="n">arguments</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_argument</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">arguments</span><span class="p">}</span>
+        <span class="n">collection</span> <span class="o">=</span> <span class="n">arguments</span><span class="p">[</span><span class="s1">&#39;collection&#39;</span><span class="p">]</span>
+        <span class="n">mRange</span> <span class="o">=</span> <span class="n">arguments</span><span class="p">[</span><span class="s1">&#39;mrange&#39;</span><span class="p">]</span>
+        <span class="n">maxZoom</span> <span class="o">=</span> <span class="n">arguments</span><span class="p">[</span><span class="s1">&#39;maxzoom&#39;</span><span class="p">]</span>
+        <span class="n">connection</span><span class="o">.</span><span class="n">range_dict</span><span class="p">[</span><span class="n">collection</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">mRange</span><span class="p">)</span>
+        <span class="n">connection</span><span class="o">.</span><span class="n">zoom_dict</span><span class="p">[</span><span class="n">collection</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">maxZoom</span><span class="p">)</span>
+
+        <span class="n">meta</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">stat_db</span><span class="p">[</span><span class="n">collection</span><span class="p">]</span><span class="o">.</span><span class="n">find_one</span><span class="p">({</span><span class="s1">&#39;_id&#39;</span><span class="p">:</span><span class="s1">&#39;meta&#39;</span><span class="p">})</span>
+        <span class="n">connection</span><span class="o">.</span><span class="n">meta_dict</span><span class="p">[</span><span class="n">collection</span><span class="p">]</span> <span class="o">=</span> <span class="n">meta</span></div></div>
+
+
+<div class="viewcode-block" id="popupHandler"><a class="viewcode-back" href="../../../extensions.html#vizic.mongo_ext.extension.popupHandler">[docs]</a><span class="k">class</span> <span class="nc">popupHandler</span><span class="p">(</span><span class="n">IPythonHandler</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Handler for data request on clicked object.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="popupHandler.get"><a class="viewcode-back" href="../../../extensions.html#vizic.mongo_ext.extension.popupHandler.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">arguments</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_argument</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">arguments</span><span class="p">}</span>
+        <span class="n">coll</span> <span class="o">=</span> <span class="n">arguments</span><span class="p">[</span><span class="s1">&#39;coll&#39;</span><span class="p">]</span>
+        <span class="n">ra</span> <span class="o">=</span> <span class="n">arguments</span><span class="p">[</span><span class="s1">&#39;ra&#39;</span><span class="p">]</span>
+        <span class="n">dec</span> <span class="o">=</span> <span class="n">arguments</span><span class="p">[</span><span class="s1">&#39;dec&#39;</span><span class="p">]</span>
+        <span class="n">content</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">getOjbectByPos</span><span class="p">(</span><span class="n">coll</span><span class="p">,</span> <span class="n">ra</span><span class="p">,</span> <span class="n">dec</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_status</span><span class="p">(</span><span class="mi">200</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_header</span><span class="p">(</span><span class="s1">&#39;Content-Type&#39;</span><span class="p">,</span> <span class="s1">&#39;application/json&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">content</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="selectionHandler"><a class="viewcode-back" href="../../../extensions.html#vizic.mongo_ext.extension.selectionHandler">[docs]</a><span class="k">class</span> <span class="nc">selectionHandler</span><span class="p">(</span><span class="n">IPythonHandler</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Handler for data request on selected objects by selection tool.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="selectionHandler.get"><a class="viewcode-back" href="../../../extensions.html#vizic.mongo_ext.extension.selectionHandler.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">arguments</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_argument</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">arguments</span><span class="p">}</span>
+        <span class="n">coll</span> <span class="o">=</span> <span class="n">arguments</span><span class="p">[</span><span class="s1">&#39;coll&#39;</span><span class="p">]</span>
+        <span class="n">swLng</span> <span class="o">=</span> <span class="n">arguments</span><span class="p">[</span><span class="s1">&#39;swlng&#39;</span><span class="p">]</span>
+        <span class="n">neLng</span> <span class="o">=</span> <span class="n">arguments</span><span class="p">[</span><span class="s1">&#39;nelng&#39;</span><span class="p">]</span>
+        <span class="n">swLat</span> <span class="o">=</span> <span class="n">arguments</span><span class="p">[</span><span class="s1">&#39;swlat&#39;</span><span class="p">]</span>
+        <span class="n">neLat</span> <span class="o">=</span> <span class="n">arguments</span><span class="p">[</span><span class="s1">&#39;nelat&#39;</span><span class="p">]</span>
+        <span class="n">content</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">getRectSelection</span><span class="p">(</span><span class="n">coll</span><span class="p">,</span> <span class="n">swLng</span><span class="p">,</span> <span class="n">swLat</span><span class="p">,</span> <span class="n">neLng</span><span class="p">,</span> <span class="n">neLat</span><span class="p">)</span>
+        <span class="n">json_str</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_status</span><span class="p">(</span><span class="mi">200</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_header</span><span class="p">(</span><span class="s1">&#39;Content-Type&#39;</span><span class="p">,</span> <span class="s1">&#39;application/json&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">json_str</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="mstHandler"><a class="viewcode-back" href="../../../extensions.html#vizic.mongo_ext.extension.mstHandler">[docs]</a><span class="k">class</span> <span class="nc">mstHandler</span><span class="p">(</span><span class="n">IPythonHandler</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Handler for MST data request.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="mstHandler.get"><a class="viewcode-back" href="../../../extensions.html#vizic.mongo_ext.extension.mstHandler.get">[docs]</a>    <span class="nd">@gen</span><span class="o">.</span><span class="n">coroutine</span>
+    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coll</span><span class="p">):</span>
+        <span class="k">global</span> <span class="n">connection</span>
+        <span class="k">if</span> <span class="n">connection</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_status</span><span class="p">(</span><span class="mi">403</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">({</span><span class="s1">&#39;msg&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">})</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">mst_gen</span> <span class="o">=</span> <span class="k">yield</span> <span class="n">connection</span><span class="o">.</span><span class="n">getMst</span><span class="p">(</span><span class="n">coll</span><span class="p">)</span>
+            <span class="n">mst_list</span> <span class="o">=</span> <span class="k">yield</span> <span class="n">mst_gen</span><span class="o">.</span><span class="n">to_list</span><span class="p">(</span><span class="n">length</span><span class="o">=</span><span class="mi">1000000000</span><span class="p">)</span>
+            <span class="n">mst_json</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">mst_list</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;tree&#39;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_status</span><span class="p">(</span><span class="mi">200</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_header</span><span class="p">(</span><span class="s1">&#39;Content-Type&#39;</span><span class="p">,</span> <span class="s1">&#39;application/json&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">mst_json</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">finish</span><span class="p">()</span></div></div>
+
+
+<div class="viewcode-block" id="voronoiHandler"><a class="viewcode-back" href="../../../extensions.html#vizic.mongo_ext.extension.voronoiHandler">[docs]</a><span class="k">class</span> <span class="nc">voronoiHandler</span><span class="p">(</span><span class="n">IPythonHandler</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Hanlder for request on voronoi diagram data.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="voronoiHandler.get"><a class="viewcode-back" href="../../../extensions.html#vizic.mongo_ext.extension.voronoiHandler.get">[docs]</a>    <span class="nd">@gen</span><span class="o">.</span><span class="n">coroutine</span>
+    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coll</span><span class="p">):</span>
+        <span class="k">global</span> <span class="n">connection</span>
+        <span class="k">if</span> <span class="n">connection</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_status</span><span class="p">(</span><span class="mi">403</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">({</span><span class="s1">&#39;msg&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">})</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">voronoi_gen</span> <span class="o">=</span> <span class="k">yield</span> <span class="n">connection</span><span class="o">.</span><span class="n">getVoronoi</span><span class="p">(</span><span class="n">coll</span><span class="p">)</span>
+            <span class="n">voronoi_list</span> <span class="o">=</span> <span class="k">yield</span> <span class="n">voronoi_gen</span><span class="o">.</span><span class="n">to_list</span><span class="p">(</span><span class="n">length</span><span class="o">=</span><span class="mi">1000000000</span><span class="p">)</span>
+            <span class="n">voronoi_json</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">voronoi_list</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_status</span><span class="p">(</span><span class="mi">200</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_header</span><span class="p">(</span><span class="s1">&#39;Content-Type&#39;</span><span class="p">,</span> <span class="s1">&#39;application/json&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">voronoi_json</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">finish</span><span class="p">()</span></div></div>
+
+
+<div class="viewcode-block" id="healpixHandler"><a class="viewcode-back" href="../../../extensions.html#vizic.mongo_ext.extension.healpixHandler">[docs]</a><span class="k">class</span> <span class="nc">healpixHandler</span><span class="p">(</span><span class="n">IPythonHandler</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Handler for data request on healpix grid.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="healpixHandler.get"><a class="viewcode-back" href="../../../extensions.html#vizic.mongo_ext.extension.healpixHandler.get">[docs]</a>    <span class="nd">@gen</span><span class="o">.</span><span class="n">coroutine</span>
+    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coll</span><span class="p">):</span>
+        <span class="k">global</span> <span class="n">connection</span>
+        <span class="k">if</span> <span class="n">connection</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_status</span><span class="p">(</span><span class="mi">403</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">({</span><span class="s1">&#39;msg&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">})</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">healpix_gen</span> <span class="o">=</span> <span class="k">yield</span> <span class="n">connection</span><span class="o">.</span><span class="n">getHealpix</span><span class="p">(</span><span class="n">coll</span><span class="p">)</span>
+            <span class="n">healpix_list</span> <span class="o">=</span> <span class="k">yield</span> <span class="n">healpix_gen</span><span class="o">.</span><span class="n">to_list</span><span class="p">(</span><span class="n">length</span><span class="o">=</span><span class="mi">1000000000</span><span class="p">)</span>
+            <span class="n">healpix_json</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">healpix_list</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_status</span><span class="p">(</span><span class="mi">200</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_header</span><span class="p">(</span><span class="s1">&#39;Content-Type&#39;</span><span class="p">,</span> <span class="s1">&#39;application/json&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">healpix_json</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">finish</span><span class="p">()</span></div></div>
+
+
+<div class="viewcode-block" id="circlesHandler"><a class="viewcode-back" href="../../../extensions.html#vizic.mongo_ext.extension.circlesHandler">[docs]</a><span class="k">class</span> <span class="nc">circlesHandler</span><span class="p">(</span><span class="n">IPythonHandler</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Handler for data request on CirclesOverLays.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="circlesHandler.get"><a class="viewcode-back" href="../../../extensions.html#vizic.mongo_ext.extension.circlesHandler.get">[docs]</a>    <span class="nd">@gen</span><span class="o">.</span><span class="n">coroutine</span>
+    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coll</span><span class="p">):</span>
+        <span class="k">global</span> <span class="n">connection</span>
+        <span class="k">if</span> <span class="n">connection</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_status</span><span class="p">(</span><span class="mi">403</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">({</span><span class="s1">&#39;msg&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">})</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">circles_gen</span> <span class="o">=</span> <span class="k">yield</span> <span class="n">connection</span><span class="o">.</span><span class="n">getCircles</span><span class="p">(</span><span class="n">coll</span><span class="p">)</span>
+            <span class="n">circles_list</span> <span class="o">=</span> <span class="k">yield</span> <span class="n">circles_gen</span><span class="o">.</span><span class="n">to_list</span><span class="p">(</span><span class="n">length</span><span class="o">=</span><span class="mi">1000000000</span><span class="p">)</span>
+            <span class="n">circles_json</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">circles_list</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_status</span><span class="p">(</span><span class="mi">200</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_header</span><span class="p">(</span><span class="s1">&#39;Content-Type&#39;</span><span class="p">,</span> <span class="s1">&#39;application/json&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">circles_json</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">finish</span><span class="p">()</span></div></div>
+
+
+<div class="viewcode-block" id="load_jupyter_server_extension"><a class="viewcode-back" href="../../../extensions.html#vizic.mongo_ext.extension.load_jupyter_server_extension">[docs]</a><span class="k">def</span> <span class="nf">load_jupyter_server_extension</span><span class="p">(</span><span class="n">nbapp</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;nbapp is instance of Jupyter.notebook.notebookapp.NotebookApp.</span>
+
+<span class="sd">    nbapp.web_app is instance of tornado.web.Application - can register</span>
+<span class="sd">    new tornado.web.RequestHandlers to extend API backend.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">nbapp</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;My Extension Loaded&#39;</span><span class="p">)</span>
+    <span class="n">web_app</span> <span class="o">=</span> <span class="n">nbapp</span><span class="o">.</span><span class="n">web_app</span>
+    <span class="n">host_pattern</span> <span class="o">=</span> <span class="s1">&#39;.*$&#39;</span>
+    <span class="n">route_pattern</span> <span class="o">=</span> <span class="n">url_path_join</span><span class="p">(</span><span class="n">web_app</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s1">&#39;base_url&#39;</span><span class="p">],</span> <span class="s1">&#39;/tiles/(\S*)/(-?[0-9]+)/(-?[0-9]+)/(-?[0-9]+).json&#39;</span><span class="p">)</span>
+    <span class="n">db_pattern</span> <span class="o">=</span> <span class="n">url_path_join</span><span class="p">(</span><span class="n">web_app</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s1">&#39;base_url&#39;</span><span class="p">],</span> <span class="s1">&#39;/connection/?&#39;</span><span class="p">)</span>
+    <span class="n">collection_pattern</span> <span class="o">=</span> <span class="n">url_path_join</span><span class="p">(</span><span class="n">web_app</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s1">&#39;base_url&#39;</span><span class="p">],</span> <span class="s1">&#39;/rangeinfo/?&#39;</span><span class="p">)</span>
+    <span class="n">popup_pattern</span> <span class="o">=</span> <span class="n">url_path_join</span><span class="p">(</span><span class="n">web_app</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s1">&#39;base_url&#39;</span><span class="p">],</span> <span class="s1">&#39;/objectPop/?&#39;</span><span class="p">)</span>
+    <span class="n">selection_pattern</span> <span class="o">=</span> <span class="n">url_path_join</span><span class="p">(</span><span class="n">web_app</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s1">&#39;base_url&#39;</span><span class="p">],</span> <span class="s1">&#39;/selection/?&#39;</span><span class="p">)</span>
+    <span class="n">mst_pattern</span> <span class="o">=</span> <span class="n">url_path_join</span><span class="p">(</span><span class="n">web_app</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s1">&#39;base_url&#39;</span><span class="p">],</span> <span class="s1">&#39;/mst/(\S*).json&#39;</span><span class="p">)</span>
+    <span class="n">circles_pattern</span> <span class="o">=</span> <span class="n">url_path_join</span><span class="p">(</span><span class="n">web_app</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s1">&#39;base_url&#39;</span><span class="p">],</span> <span class="s1">&#39;/circles/(\S*).json&#39;</span><span class="p">)</span>
+    <span class="n">healpix_pattern</span> <span class="o">=</span> <span class="n">url_path_join</span><span class="p">(</span><span class="n">web_app</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s1">&#39;base_url&#39;</span><span class="p">],</span> <span class="s1">&#39;/healpix/(\S*).json&#39;</span><span class="p">)</span>
+    <span class="n">voronoi_pattern</span> <span class="o">=</span> <span class="n">url_path_join</span><span class="p">(</span><span class="n">web_app</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s1">&#39;base_url&#39;</span><span class="p">],</span> <span class="s1">&#39;/voronoi/(\S*).json&#39;</span><span class="p">)</span>
+    <span class="n">web_app</span><span class="o">.</span><span class="n">add_handlers</span><span class="p">(</span><span class="n">host_pattern</span><span class="p">,</span> <span class="p">[</span>
+        <span class="p">(</span><span class="n">route_pattern</span><span class="p">,</span> <span class="n">tileHandler</span><span class="p">),</span>
+        <span class="p">(</span><span class="n">popup_pattern</span><span class="p">,</span> <span class="n">popupHandler</span><span class="p">),</span>
+        <span class="p">(</span><span class="n">db_pattern</span><span class="p">,</span> <span class="n">dbHandler</span><span class="p">),</span>
+        <span class="p">(</span><span class="n">collection_pattern</span><span class="p">,</span> <span class="n">rangeHandler</span><span class="p">),</span>
+        <span class="p">(</span><span class="n">selection_pattern</span><span class="p">,</span> <span class="n">selectionHandler</span><span class="p">),</span>
+        <span class="p">(</span><span class="n">mst_pattern</span><span class="p">,</span> <span class="n">mstHandler</span><span class="p">),</span>
+        <span class="p">(</span><span class="n">circles_pattern</span><span class="p">,</span> <span class="n">circlesHandler</span><span class="p">),</span>
+        <span class="p">(</span><span class="n">healpix_pattern</span><span class="p">,</span> <span class="n">healpixHandler</span><span class="p">),</span>
+        <span class="p">(</span><span class="n">voronoi_pattern</span><span class="p">,</span> <span class="n">voronoiHandler</span><span class="p">)</span>
+    <span class="p">])</span></div>
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Weixiang Yu.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../',
+            VERSION:'0.4',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
