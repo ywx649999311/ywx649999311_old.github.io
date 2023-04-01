@@ -51,7 +51,7 @@ date_format = "Jan 2006"
   """
 
 [[experience]]
-  title = "Academical Professional"
+  title = "Academic Professional"
   company = "National Center for Supercomputing Applications"
   company_url = ""
   location = "Urbana, IL"
